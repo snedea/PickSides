@@ -3,13 +3,28 @@
 import { useState, useEffect } from 'react'
 import DebateCard from './DebateCard'
 import VotingCard from './VotingCard'
+import TopicSubmissionCard from './TopicSubmissionCard'
+import FinalResultsCard from './FinalResultsCard'
 import styles from './SwipeDebateContainer.module.css'
 
-export default function SwipeDebateContainer({ debates }) {
+export default function SwipeDebateContainer() {
+  const [debates, setDebates] = useState([])
   const [currentDebateIndex, setCurrentDebateIndex] = useState(0)
   const [currentRound, setCurrentRound] = useState(1) // 1, 2, 3 for rounds, 4 for voting
   const [votes, setVotes] = useState({}) // Track votes by debate ID
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [showSubmissionForm, setShowSubmissionForm] = useState(false)
+  const [isGeneratingDebate, setIsGeneratingDebate] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
+  const [isVoting, setIsVoting] = useState(false)
+  
+  // Round-by-round voting state
+  const [roundWinners, setRoundWinners] = useState({
+    round1: null,  // 'pro' or 'con'
+    round2: null,
+    round3: null
+  })
   
   // Touch handling state
   const [touchStart, setTouchStart] = useState(null)
@@ -17,6 +32,97 @@ export default function SwipeDebateContainer({ debates }) {
 
   const minSwipeDistance = 50
   const currentDebate = debates[currentDebateIndex]
+
+  // Calculate current score from round winners
+  const calculateCurrentScore = () => {
+    const score = { pro: 0, con: 0 }
+    Object.values(roundWinners).forEach(winner => {
+      if (winner === 'pro') score.pro++
+      else if (winner === 'con') score.con++
+    })
+    return score
+  }
+
+  // Handle round voting
+  const handleRoundVote = (roundNumber, side) => {
+    // Update round winners
+    setRoundWinners(prev => ({
+      ...prev,
+      [`round${roundNumber}`]: side
+    }))
+    
+    // Auto-advance after voting with delay
+    if (roundNumber < 3) {
+      setTimeout(() => setCurrentRound(roundNumber + 1), 300)
+    } else {
+      // All rounds complete, show final score
+      setTimeout(() => setCurrentRound(4), 300)
+    }
+  }
+
+  // Handle unvoting (removing a vote)
+  const handleUnvote = (roundNumber) => {
+    setRoundWinners(prev => ({
+      ...prev,
+      [`round${roundNumber}`]: null
+    }))
+  }
+
+  // Handle voting again (reset all votes)
+  const handleVoteAgain = () => {
+    setRoundWinners({
+      round1: null,
+      round2: null,
+      round3: null
+    })
+    setCurrentRound(1)
+  }
+
+  // Handle viewing votes (go back to round 1)
+  const handleViewVotes = () => {
+    setCurrentRound(1)
+  }
+
+  // Load debates from database on mount
+  useEffect(() => {
+    async function loadDebates() {
+      try {
+        setIsLoading(true)
+        setLoadError(null)
+        
+        const response = await fetch('/api/debates?limit=20')
+        if (!response.ok) {
+          throw new Error('Failed to load debates')
+        }
+        
+        const debatesData = await response.json()
+        
+        if (debatesData.length === 0) {
+          // If no debates in database, load sample debates as fallback
+          const { sampleDebates } = await import('../data/sampleDebates')
+          setDebates(sampleDebates)
+        } else {
+          setDebates(debatesData)
+        }
+        
+      } catch (error) {
+        console.error('Error loading debates:', error)
+        setLoadError('Failed to load debates. Please try again.')
+        
+        // Load sample debates as fallback
+        try {
+          const { sampleDebates } = await import('../data/sampleDebates')
+          setDebates(sampleDebates)
+        } catch (fallbackError) {
+          console.error('Failed to load fallback debates:', fallbackError)
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    loadDebates()
+  }, [])
   
   const handleTouchStart = (e) => {
     setTouchEnd(null)
@@ -53,22 +159,17 @@ export default function SwipeDebateContainer({ debates }) {
           }
           
           // Wait for flash animation, then register vote and auto-advance
-          setTimeout(() => {
-            setVotes(prev => ({
-              ...prev,
-              [currentDebate.id]: 'tie'
-            }))
+          setTimeout(async () => {
+            await handleVote('tie')
             
-            // Auto-advance to next debate (or previous if swiping right)
-            setTimeout(() => {
-              if (distanceX > 0) {
-                // Swipe left - next debate
-                nextDebate()
-              } else {
-                // Swipe right - previous debate
-                previousDebate()
-              }
-            }, 350) // Brief delay to show tie confirmation
+            // Navigation will be handled by handleVote function
+            // But for horizontal gesture, we need to handle direction
+            if (distanceX > 0) {
+              // Swipe left - next debate (handleVote already calls nextDebate)
+            } else {
+              // Swipe right - previous debate
+              setTimeout(() => previousDebate(), 500)
+            }
           }, 150)
         } else {
           // Already voted, navigate immediately
@@ -98,28 +199,16 @@ export default function SwipeDebateContainer({ debates }) {
             if (typeof window !== 'undefined' && window.triggerProFlash) {
               window.triggerProFlash()
             }
-            setTimeout(() => {
-              setVotes(prev => ({
-                ...prev,
-                [currentDebate.id]: 'pro'
-              }))
-              setTimeout(() => {
-                nextDebate()
-              }, 350)
+            setTimeout(async () => {
+              await handleVote('pro')
             }, 150)
           } else {
             // Swipe down - vote Con
             if (typeof window !== 'undefined' && window.triggerConFlash) {
               window.triggerConFlash()
             }
-            setTimeout(() => {
-              setVotes(prev => ({
-                ...prev,
-                [currentDebate.id]: 'con'
-              }))
-              setTimeout(() => {
-                nextDebate()
-              }, 350)
+            setTimeout(async () => {
+              await handleVote('con')
             }, 150)
           }
         }
@@ -157,6 +246,12 @@ export default function SwipeDebateContainer({ debates }) {
       setIsTransitioning(true)
       setCurrentDebateIndex(prev => prev < debates.length - 1 ? prev + 1 : 0)
       setCurrentRound(1)
+      // Reset round voting state for new debate
+      setRoundWinners({
+        round1: null,
+        round2: null,
+        round3: null
+      })
       setTimeout(() => setIsTransitioning(false), 300)
     }
   }
@@ -166,55 +261,175 @@ export default function SwipeDebateContainer({ debates }) {
       setIsTransitioning(true)
       setCurrentDebateIndex(prev => prev > 0 ? prev - 1 : debates.length - 1)
       setCurrentRound(1)
+      // Reset round voting state for new debate
+      setRoundWinners({
+        round1: null,
+        round2: null,
+        round3: null
+      })
       setTimeout(() => setIsTransitioning(false), 300)
     }
   }
 
-  const handleVote = (side) => {
+  const handleVote = async (side) => {
+    if (isVoting || !currentDebate) return
+    
+    setIsVoting(true)
+    
+    // Optimistic update
     setVotes(prev => ({
       ...prev,
       [currentDebate.id]: side
     }))
     
-    // Auto-advance to next debate after brief confirmation
+    try {
+      const response = await fetch('/api/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          debateId: currentDebate.id,
+          side
+        })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 409) {
+          // User already voted - keep the optimistic update and treat as success
+          console.log('User already voted on this debate')
+          // Don't update vote counts since they already voted
+          return
+        } else {
+          throw new Error(errorData.error || 'Failed to vote')
+        }
+      }
+      
+      // Update debate vote counts in local state only if vote was successful
+      setDebates(prev => 
+        prev.map(debate => 
+          debate.id === currentDebate.id 
+            ? { 
+                ...debate, 
+                [side === 'pro' ? 'pro_votes' : side === 'con' ? 'con_votes' : 'tie_votes']: 
+                  (debate[side === 'pro' ? 'pro_votes' : side === 'con' ? 'con_votes' : 'tie_votes'] || 0) + 1
+              }
+            : debate
+        )
+      )
+      
+    } catch (error) {
+      console.error('Voting error:', error)
+      
+      // Revert optimistic update on error
+      setVotes(prev => {
+        const newVotes = { ...prev }
+        delete newVotes[currentDebate.id]
+        return newVotes
+      })
+      
+      // Could show error toast here
+      alert('Failed to record vote. Please try again.')
+      
+      // Don't auto-advance on error
+      setIsVoting(false)
+      return
+    } finally {
+      setIsVoting(false)
+    }
+    
+    // Auto-advance to next debate after brief confirmation (only on success)
     setTimeout(() => {
       nextDebate()
     }, 500)
   }
 
-  const handleProClick = () => {
-    if (currentRound < 4 && !isTransitioning) {
-      setIsTransitioning(true)
-      if (currentRound === 3) {
-        // If on round 3, advance to voting screen
-        setCurrentRound(4)
-      } else {
-        // Otherwise advance to next round
-        setCurrentRound(prev => prev + 1)
+
+  const handleTopicSubmit = async ({ topic, proModel, conModel }) => {
+    setIsGeneratingDebate(true)
+    
+    try {
+      const response = await fetch('/api/debate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topic, proModel, conModel })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate debate')
       }
-      setTimeout(() => setIsTransitioning(false), 300)
+      
+      const newDebate = await response.json()
+      
+      // Add to debates array and navigate to it
+      setDebates(prev => [...prev, newDebate])
+      setCurrentDebateIndex(debates.length) // Navigate to new debate
+      setCurrentRound(1)
+      setShowSubmissionForm(false)
+      
+    } catch (error) {
+      console.error('Error generating debate:', error)
+      // Could add error toast here
+    } finally {
+      setIsGeneratingDebate(false)
     }
   }
 
-  const handleConClick = () => {
-    if (currentRound < 4 && !isTransitioning) {
-      setIsTransitioning(true)
-      if (currentRound === 3) {
-        // If on round 3, advance to voting screen
-        setCurrentRound(4)
-      } else {
-        // Otherwise advance to next round
-        setCurrentRound(prev => prev + 1)
-      }
-      setTimeout(() => setIsTransitioning(false), 300)
-    }
+  const handleSubmissionCancel = () => {
+    setShowSubmissionForm(false)
   }
 
   // Create debate data for current round
-  const currentRoundData = currentRound <= 3 ? {
+  const currentRoundData = currentRound <= 3 && currentDebate && currentDebate.rounds ? {
     ...currentDebate,
     rounds: [currentDebate.rounds[currentRound - 1]]
   } : null
+
+  // Show submission form if requested
+  if (showSubmissionForm) {
+    return (
+      <TopicSubmissionCard
+        onSubmit={handleTopicSubmit}
+        onCancel={handleSubmissionCancel}
+        isLoading={isGeneratingDebate}
+      />
+    )
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p>Loading debates...</p>
+          {loadError && (
+            <p className={styles.error}>{loadError}</p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if no debates loaded
+  if (debates.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <p>No debates available.</p>
+          <button 
+            className={styles.retryButton}
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div 
@@ -227,11 +442,18 @@ export default function SwipeDebateContainer({ debates }) {
       <div className={styles.fixedHeader}>
         <div className={styles.indicators}>
           <div className={styles.debateIndicator}>
-            {currentDebateIndex + 1} / {debates.length}
+            {debates.length > 0 ? `${currentDebateIndex + 1} / ${debates.length}` : '0 / 0'}
           </div>
+          <button 
+            className={styles.addTopicButton}
+            onClick={() => setShowSubmissionForm(true)}
+            aria-label="Add new topic"
+          >
+            +
+          </button>
         </div>
         <div className={styles.fixedTopic}>
-          <h1>{currentDebate.topic}</h1>
+          <h1>{currentDebate?.topic || 'Loading...'}</h1>
         </div>
       </div>
 
@@ -272,18 +494,25 @@ export default function SwipeDebateContainer({ debates }) {
         {currentRound <= 3 ? (
           <DebateCard 
             debate={currentRoundData}
-            onProClick={handleProClick}
-            onConClick={handleConClick}
+            onVote={handleRoundVote}
+            onUnvote={handleUnvote}
+            roundNumber={currentRound}
+            roundWinners={roundWinners}
           />
-        ) : (
-          <VotingCard 
+        ) : currentDebate ? (
+          <FinalResultsCard 
+            roundWinners={roundWinners}
+            proModel={currentDebate.pro_model}
+            conModel={currentDebate.con_model}
             topic={currentDebate.topic}
-            onVote={handleVote}
-            hasVoted={!!votes[currentDebate.id]}
-            votedFor={votes[currentDebate.id]}
+            debate={currentDebate}
+            onContinue={() => nextDebate()}
+            onVoteAgain={handleVoteAgain}
+            onViewVotes={handleViewVotes}
           />
-        )}
+        ) : null}
       </div>
+
 
     </div>
   )

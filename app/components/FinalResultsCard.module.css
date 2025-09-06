@@ -1,0 +1,501 @@
+.resultsContainer {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-bottom: 120px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.resultsCard {
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95), rgba(17, 17, 17, 0.9));
+  border-radius: 32px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 40px 24px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s ease-out;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.topic {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 12px;
+}
+
+.winnerSection {
+  margin-bottom: 36px;
+  padding: 32px 20px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+  border-radius: 24px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.winnerAnnouncement .winnerText {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tieAnnouncement .winnerText {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.winnerModel {
+  color: inherit;
+}
+
+.winsText {
+  color: #ffffff;
+}
+
+.scoreText {
+  font-size: 24px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 16px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.modelMatchup {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modelName {
+  font-weight: 700;
+}
+
+.vs {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  margin: 0 8px;
+}
+
+/* Model-specific colors */
+.chatgpt {
+  color: #10a37f !important;
+}
+
+.claude {
+  color: #d97706 !important;
+}
+
+.gemini {
+  color: #4285f4 !important;
+}
+
+.roundBreakdown {
+  margin-bottom: 36px;
+}
+
+.breakdownTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+  letter-spacing: -0.01em;
+}
+
+.rounds {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roundResult {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.6));
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.roundResult:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.roundNumber {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.roundWinner {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 12px;
+  min-width: 80px;
+  text-align: center;
+}
+
+.proWin {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.1));
+  color: #22c55e;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.conWin {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.1));
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.continueSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.continueButton {
+  background: linear-gradient(135deg, #10b981, rgba(16, 185, 129, 0.9));
+  border: none;
+  border-radius: 24px;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+  min-width: 160px;
+  justify-content: center;
+}
+
+.continueButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+}
+
+.continueButton:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.continueText {
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.arrow {
+  font-size: 20px;
+  font-weight: 900;
+  transition: transform 0.3s ease;
+}
+
+.continueButton:hover .arrow {
+  transform: translateX(4px);
+}
+
+.instruction {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .resultsCard {
+    padding: 32px 20px;
+    border-radius: 28px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .topic {
+    font-size: 15px;
+    padding: 0 8px;
+  }
+
+  .winnerAnnouncement .winnerText,
+  .tieAnnouncement .winnerText {
+    font-size: 24px;
+  }
+
+  .scoreText {
+    font-size: 20px;
+  }
+
+  .modelMatchup {
+    font-size: 13px;
+  }
+
+  .breakdownTitle {
+    font-size: 16px;
+  }
+
+  .roundResult {
+    padding: 14px 16px;
+  }
+
+  .roundNumber {
+    font-size: 13px;
+  }
+
+  .roundWinner {
+    font-size: 14px;
+    padding: 4px 10px;
+    min-width: 70px;
+  }
+
+  .continueButton {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  .continueText {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .resultsCard {
+    padding: 28px 16px;
+    border-radius: 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .topic {
+    font-size: 14px;
+  }
+
+  .winnerSection {
+    padding: 24px 16px;
+  }
+
+  .winnerAnnouncement .winnerText,
+  .tieAnnouncement .winnerText {
+    font-size: 20px;
+  }
+
+  .scoreText {
+    font-size: 18px;
+  }
+
+  .rounds {
+    gap: 10px;
+  }
+
+  .roundResult {
+    padding: 12px 14px;
+  }
+
+  .continueButton {
+    padding: 12px 24px;
+    font-size: 15px;
+    min-width: 140px;
+  }
+
+  .instruction {
+    font-size: 13px;
+  }
+}
+
+/* New styles for enhanced final results */
+.confirmationIcon,
+.winnerIcon {
+  font-size: 72px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.scoreDisplay {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-weight: 600;
+}
+
+.confirmButton {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border: none;
+  border-radius: 24px;
+  padding: 20px 32px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+  min-width: 200px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.confirmButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+}
+
+.confirmButton:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+}
+
+.confirmIcon {
+  font-size: 32px;
+}
+
+.confirmText {
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+}
+
+.primary:hover {
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+}
+
+.secondaryActions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.secondaryButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.secondaryButton:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.reviewOption {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.reviewButton {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.reviewButton:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Mobile optimizations for new elements */
+@media (max-width: 768px) {
+  .confirmButton {
+    padding: 16px 28px;
+    font-size: 16px;
+    min-width: 180px;
+  }
+
+  .confirmIcon {
+    font-size: 28px;
+  }
+
+  .confirmText {
+    font-size: 16px;
+  }
+
+  .secondaryActions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .secondaryButton {
+    min-width: 140px;
+  }
+
+  .confirmationIcon,
+  .winnerIcon {
+    font-size: 60px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirmButton {
+    padding: 14px 24px;
+    font-size: 15px;
+    min-width: 160px;
+  }
+
+  .secondaryButton {
+    font-size: 13px;
+    padding: 8px 16px;
+    min-width: 120px;
+  }
+
+  .confirmationIcon,
+  .winnerIcon {
+    font-size: 50px;
+    margin-bottom: 10px;
+  }
+}

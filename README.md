@@ -2,7 +2,7 @@
 
 > TikTok-style debate app where AI argues both sides and you pick the winner
 
-**Version 0.0.2** - A mobile-first debate experience with swipe navigation, gesture voting, and swift tap-to-advance interactions.
+**Version 0.0.3** - Heart-Button Voting Revolution! Explicit voting with heart buttons, vote editing capability, and enhanced user experience.
 
 ## ✨ Features
 
@@ -12,19 +12,20 @@
 - **3-Round Structure**: Opening statements, rebuttals, and closing arguments
 - **TL;DR Summaries**: Quick overview of each side's key points
 
-### 📱 Interactive Voting
-- **Swift Tap Navigation**: Click Pro/Con sections on rounds 1-3 to instantly advance
-- **Large Voting Buttons**: Pro, Tie, Con buttons optimized for mobile
-- **Gesture Voting**: Swipe ↑ for Pro, ↓ for Con, ← → for Tie
-- **Auto-Advance**: Automatically moves to next debate after voting
-- **Vote Tracking**: Remembers your choices across debates
+### ❤️ Heart-Button Voting System
+- **Explicit Heart Voting**: Clear ♡ and ❤️ buttons for intentional voting
+- **Vote Editing**: Tap filled hearts to unvote, change votes anytime
+- **Split → Tap → Enlarged → Vote Flow**: Tap sections to enlarge, then vote with hearts
+- **Vote Review**: "View My Votes" to see round-by-round choices
+- **Pre/Post-Vote States**: Confirmation screen with "Vote Again" option
+- **Auto-Advance**: Smooth progression after each round vote
 
 ### 🎨 Design & UX  
 - **Dark Glassmorphism UI**: Modern, sleek interface with blur effects
 - **Prominent Topic Header**: Large, readable debate questions with subtle shadows
 - **Infinite Carousel**: Seamlessly loop from debate 5/5 → 1/5
 - **Clickable Navigation**: Dots and arrows for precise control
-- **Swift Interactions**: Tap Pro/Con sides for instant round progression
+- **Heart-Button Interface**: Intuitive ♡/❤️ voting with edit capability
 - **Mobile-First**: Responsive design optimized for touch
 
 ## 🚀 Quick Start
@@ -72,13 +73,12 @@
 - **Down Arrow**: Click to advance through rounds
 
 ### Voting & Interaction
-- **Quick Tap Navigation**: On rounds 1-3, tap any Pro or Con section to advance
-- **Final Vote Buttons**: Use large Pro, Tie, or Con buttons on voting screen
-- **Gesture Voting**: 
-  - Swipe ↑ = Vote Pro
-  - Swipe ↓ = Vote Con  
-  - Swipe ← or → = Vote Tie
-- **Visual Feedback**: Hover effects and flash animations for all interactions
+- **Heart-Button Voting**: Tap ♡ to vote, tap ❤️ to unvote or change vote
+- **Enlarged Reading Mode**: Tap Pro/Con sections to view full arguments
+- **Round-by-Round Voting**: Vote on each round individually (1, 2, 3)
+- **Vote Confirmation**: Review votes before finalizing with "Confirm Vote"
+- **Vote Management**: "View My Votes" and "Vote Again" options
+- **Visual Feedback**: Heart pulse animations and smooth transitions
 
 ### Sample Debates
 Experience 5 pre-loaded debates on topics like:

@@ -36,20 +36,31 @@ This document chronicles the development of PickSides, a TikTok-style debate app
 - Added hover effects and visual feedback for clickable areas
 - Optimized interaction flow for faster user engagement
 
+### Phase 6: Heart-Button Voting Revolution (v0.0.3)
+- **Replaced Double-Tap with Explicit Heart Buttons**: Eliminated accidental voting with clear ♡/❤️ interface
+- **Vote Editing System**: Users can unvote (tap filled heart) or change votes seamlessly
+- **Enhanced User Flow**: Split View → Tap section → Enlarged View → Tap ♡ to vote → Next round
+- **Pre/Post-Vote States**: Added confirmation screen with vote review options
+- **Vote Management**: "View My Votes" navigation and "Vote Again" with confirmation dialog
+- **Heart Pulse Animation**: 0.25s visual feedback with haptic support on mobile devices
+- **Complete Overlay Removal**: Eliminated complex RoundVoteOverlay system entirely
+
 ## 🏗 Architecture Decisions
 
 ### Component Structure
 ```
 SwipeDebateContainer (Main Logic)
-├── DebateCard (Rounds 1-3)
-│   ├── Fixed topic header
-│   ├── Round information  
-│   ├── Pro/Con split layout
-│   └── TL;DR summaries
-└── VotingCard (Round 4)
-    ├── Large voting buttons
-    ├── Gesture recognition
-    └── Vote confirmation
+├── DebateCard (Rounds 1-3) - Heart-Button Voting
+│   ├── Fixed topic header with round progress
+│   ├── Heart buttons (♡/❤️) for vote/unvote
+│   ├── Split view with Pro/Con sections
+│   ├── Enlarged view for detailed reading
+│   └── Vote editing with visual feedback
+└── FinalResultsCard (Round 4) - Vote Confirmation
+    ├── Pre-vote state with round breakdown
+    ├── Vote confirmation workflow
+    ├── Post-vote state with "Continue" action
+    └── Vote management (View/Vote Again)
 ```
 
 ### State Management
