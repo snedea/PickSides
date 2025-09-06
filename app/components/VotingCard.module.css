@@ -1,0 +1,316 @@
+.votingContainer {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-bottom: 120px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.votingCard {
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95), rgba(17, 17, 17, 0.9));
+  border-radius: 32px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 48px 24px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s ease-out;
+}
+
+.question h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+
+.topic {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin-bottom: 48px;
+  padding: 0 20px;
+}
+
+.voteButtonsContainer {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.voteButton {
+  flex: 1;
+  height: 360px;
+  width: 840px;
+  max-width: 90%;
+  align-self: center;
+  border: none;
+  border-radius: 48px;
+  font-size: 60px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease-out;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.voteButton:active {
+  transform: scale(0.96);
+}
+
+.voteButton:disabled {
+  cursor: default;
+}
+
+.proButton {
+  background: linear-gradient(135deg, #10b981, rgba(16, 185, 129, 0.9));
+  color: white;
+}
+
+.proButton:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+}
+
+.conButton {
+  background: linear-gradient(135deg, #ef4444, rgba(239, 68, 68, 0.9));
+  color: white;
+}
+
+.conButton:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(239, 68, 68, 0.4);
+}
+
+.tieButton {
+  background: linear-gradient(135deg, #fbbf24, rgba(251, 191, 36, 0.9));
+  color: #1f2937;
+}
+
+.tieButton:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(251, 191, 36, 0.4);
+}
+
+.tieButton.selected {
+  box-shadow: 0 16px 40px rgba(251, 191, 36, 0.5);
+}
+
+.flashTie {
+  animation: flashAnimation 0.3s ease-out;
+}
+
+.flashPro {
+  animation: flashAnimationPro 0.3s ease-out;
+}
+
+.flashCon {
+  animation: flashAnimationCon 0.3s ease-out;
+}
+
+@keyframes flashAnimation {
+  0% { transform: scale(1) translateY(0); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+  50% { transform: scale(1.05) translateY(-2px); box-shadow: 0 20px 50px rgba(251, 191, 36, 0.6); }
+  100% { transform: scale(1) translateY(0); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+}
+
+@keyframes flashAnimationPro {
+  0% { transform: scale(1) translateY(0); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+  50% { transform: scale(1.05) translateY(-2px); box-shadow: 0 20px 50px rgba(16, 185, 129, 0.6); }
+  100% { transform: scale(1) translateY(0); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+}
+
+@keyframes flashAnimationCon {
+  0% { transform: scale(1) translateY(0); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+  50% { transform: scale(1.05) translateY(-2px); box-shadow: 0 20px 50px rgba(239, 68, 68, 0.6); }
+  100% { transform: scale(1) translateY(0); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+}
+
+.voteLabel {
+  font-size: 54px;
+  letter-spacing: 6px;
+  font-weight: 900;
+}
+
+.checkmark {
+  font-size: 84px;
+  margin-top: 24px;
+  animation: checkmarkPop 0.6s ease-out;
+}
+
+@keyframes checkmarkPop {
+  0% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+  100% { transform: scale(1) rotate(360deg); opacity: 1; }
+}
+
+.selected {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.proButton.selected {
+  box-shadow: 0 16px 40px rgba(16, 185, 129, 0.5);
+}
+
+.conButton.selected {
+  box-shadow: 0 16px 40px rgba(239, 68, 68, 0.5);
+}
+
+.voteConfirmation {
+  animation: slideUp 0.6s ease-out;
+}
+
+.confirmationText {
+  font-size: 20px;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.tieConfirmation {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.3) !important;
+}
+
+.swipeHint {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  animation: pulse 2s infinite;
+}
+
+.instruction {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.swipeInstruction {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes slideUp {
+  0% { transform: translateY(30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Particle effect animation (optional) */
+@keyframes particles {
+  0% { transform: translate(0, 0) scale(0); opacity: 1; }
+  100% { transform: translate(var(--random-x), var(--random-y)) scale(1); opacity: 0; }
+}
+
+.particleEffect {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, #10b981, transparent);
+  border-radius: 50%;
+  animation: particles 1.5s ease-out forwards;
+  pointer-events: none;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .votingCard {
+    padding: 36px 20px;
+    border-radius: 28px;
+  }
+
+  .question h2 {
+    font-size: 24px;
+  }
+
+  .topic {
+    font-size: 15px;
+    padding: 0 12px;
+    margin-bottom: 36px;
+  }
+
+  .voteButton {
+    height: 280px;
+    width: 600px;
+    max-width: 90%;
+    border-radius: 40px;
+    font-size: 48px;
+  }
+  
+  .voteLabel {
+    font-size: 42px;
+    letter-spacing: 4px;
+  }
+  
+  .checkmark {
+    font-size: 64px;
+    margin-top: 16px;
+  }
+
+
+  .confirmationText {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .votingCard {
+    padding: 32px 16px;
+    border-radius: 24px;
+  }
+
+  .question h2 {
+    font-size: 22px;
+  }
+
+  .topButtons {
+    gap: 16px;
+  }
+
+  .voteButton {
+    height: 240px;
+    width: 480px;
+    max-width: 95%;
+    border-radius: 32px;
+    font-size: 36px;
+  }
+
+  .voteLabel {
+    font-size: 32px;
+    letter-spacing: 3px;
+  }
+
+  .checkmark {
+    font-size: 48px;
+    margin-top: 12px;
+  }
+
+  .confirmationText {
+    font-size: 16px;
+  }
+}

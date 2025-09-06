@@ -1,0 +1,247 @@
+.debateContainer {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  padding: 20px;
+  padding-bottom: 120px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.debateTopic {
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.9), rgba(17, 17, 17, 0.8));
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.debateTopic h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.roundsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.round {
+  flex: 1;
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95), rgba(17, 17, 17, 0.9));
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-out;
+}
+
+.round:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.roundHeader {
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.8));
+  padding: 12px 16px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roundHeader h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.argumentsSplit {
+  flex: 1;
+  display: flex;
+}
+
+.proSide,
+.conSide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.proSide {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sideHeader {
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 800;
+  transition: all 0.3s ease;
+}
+
+.proHeader {
+  background: linear-gradient(135deg, #10b981, rgba(16, 185, 129, 0.8));
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.conHeader {
+  background: linear-gradient(135deg, #ef4444, rgba(239, 68, 68, 0.8));
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.sideHeader h3 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
+
+.tldr {
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 800;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+.proTldr {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.1));
+  color: #22c55e;
+  border-left: 4px solid #10b981;
+}
+
+.conTldr {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.1));
+  color: #f87171;
+  border-left: 4px solid #ef4444;
+}
+
+.tldr strong {
+  color: inherit;
+  font-weight: 900;
+  text-shadow: 0 0 8px currentColor;
+}
+
+.argumentText {
+  flex: 1;
+  padding: 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #e5e5e5;
+  background: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  border-top: none;
+}
+
+.proSide .argumentText {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure equal width sides on all screens */
+.proSide,
+.conSide {
+  width: 50%;
+  min-width: 0; /* Prevent flex overflow */
+  flex-shrink: 1;
+}
+
+/* Mobile optimizations - keep side by side */
+@media (max-width: 768px) {
+  .debateContainer {
+    padding: 12px;
+  }
+
+  .debateTopic {
+    padding: 20px 16px;
+    margin-bottom: 20px;
+  }
+
+  .debateTopic h1 {
+    font-size: 18px;
+  }
+
+  .roundHeader {
+    padding: 16px 12px;
+  }
+
+  .roundHeader h2 {
+    font-size: 16px;
+  }
+
+  .tldr {
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .argumentText {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .sideHeader {
+    padding: 12px 8px;
+  }
+
+  .sideHeader h3 {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .debateContainer {
+    padding: 8px;
+  }
+
+  .debateTopic {
+    padding: 16px 12px;
+  }
+
+  .debateTopic h1 {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .tldr {
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.1;
+  }
+
+  .argumentText {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .sideHeader {
+    padding: 10px 6px;
+  }
+
+  .sideHeader h3 {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+}

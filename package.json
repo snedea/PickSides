@@ -1,0 +1,21 @@
+{
+  "name": "picksides",
+  "version": "0.0.1",
+  "description": "TikTok-style AI debate app with swipe navigation and gesture voting",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0"
+  }
+}
