@@ -83,6 +83,40 @@
   flex-direction: column;
 }
 
+.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.clickable:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.clickable:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+.clickable::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.clickable:hover::after {
+  opacity: 1;
+}
+
+
 .proSide {
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -92,6 +126,7 @@
   text-align: center;
   font-weight: 800;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .proHeader {

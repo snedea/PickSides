@@ -30,6 +30,12 @@ This document chronicles the development of PickSides, a TikTok-style debate app
 - Tripled voting button sizes for better accessibility
 - Added gesture voting (↑=Pro, ↓=Con, ←→=Tie)
 
+### Phase 5: Swift Interactions (v0.0.2)
+- Implemented clickable Pro/Con sections on rounds 1-3
+- Enhanced topic header with larger, more prominent text
+- Added hover effects and visual feedback for clickable areas
+- Optimized interaction flow for faster user engagement
+
 ## 🏗 Architecture Decisions
 
 ### Component Structure
@@ -185,6 +191,14 @@ Voting Gestures:
 ### 5. Infinite Carousel Logic
 **Problem**: Seamless wraparound navigation (5→1, 1→5)
 **Solution**: Modulo arithmetic with proper boundary checks
+
+### 6. Swift User Interactions (v0.0.2)
+**Problem**: Users needed faster ways to progress through rounds
+**Solution**: Made entire Pro/Con sections clickable with smart advancement logic
+
+### 7. Topic Prominence
+**Problem**: Debate questions were too subtle for such an important element
+**Solution**: Enhanced typography with larger text, better weight, and text shadows
 
 ## 📊 Performance Metrics
 

@@ -182,6 +182,34 @@ export default function SwipeDebateContainer({ debates }) {
     }, 500)
   }
 
+  const handleProClick = () => {
+    if (currentRound < 4 && !isTransitioning) {
+      setIsTransitioning(true)
+      if (currentRound === 3) {
+        // If on round 3, advance to voting screen
+        setCurrentRound(4)
+      } else {
+        // Otherwise advance to next round
+        setCurrentRound(prev => prev + 1)
+      }
+      setTimeout(() => setIsTransitioning(false), 300)
+    }
+  }
+
+  const handleConClick = () => {
+    if (currentRound < 4 && !isTransitioning) {
+      setIsTransitioning(true)
+      if (currentRound === 3) {
+        // If on round 3, advance to voting screen
+        setCurrentRound(4)
+      } else {
+        // Otherwise advance to next round
+        setCurrentRound(prev => prev + 1)
+      }
+      setTimeout(() => setIsTransitioning(false), 300)
+    }
+  }
+
   // Create debate data for current round
   const currentRoundData = currentRound <= 3 ? {
     ...currentDebate,
@@ -242,7 +270,11 @@ export default function SwipeDebateContainer({ debates }) {
       {/* Main Content */}
       <div className={`${styles.content} ${isTransitioning ? styles.transitioning : ''}`}>
         {currentRound <= 3 ? (
-          <DebateCard debate={currentRoundData} />
+          <DebateCard 
+            debate={currentRoundData}
+            onProClick={handleProClick}
+            onConClick={handleConClick}
+          />
         ) : (
           <VotingCard 
             topic={currentDebate.topic}

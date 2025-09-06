@@ -2,7 +2,7 @@
 
 > TikTok-style debate app where AI argues both sides and you pick the winner
 
-**Version 0.0.1** - A mobile-first debate experience with swipe navigation, gesture voting, and infinite carousel browsing.
+**Version 0.0.2** - A mobile-first debate experience with swipe navigation, gesture voting, and swift tap-to-advance interactions.
 
 ## ✨ Features
 
@@ -13,6 +13,7 @@
 - **TL;DR Summaries**: Quick overview of each side's key points
 
 ### 📱 Interactive Voting
+- **Swift Tap Navigation**: Click Pro/Con sections on rounds 1-3 to instantly advance
 - **Large Voting Buttons**: Pro, Tie, Con buttons optimized for mobile
 - **Gesture Voting**: Swipe ↑ for Pro, ↓ for Con, ← → for Tie
 - **Auto-Advance**: Automatically moves to next debate after voting
@@ -20,9 +21,10 @@
 
 ### 🎨 Design & UX  
 - **Dark Glassmorphism UI**: Modern, sleek interface with blur effects
-- **Fixed Topic Header**: Always visible debate question
+- **Prominent Topic Header**: Large, readable debate questions with subtle shadows
 - **Infinite Carousel**: Seamlessly loop from debate 5/5 → 1/5
 - **Clickable Navigation**: Dots and arrows for precise control
+- **Swift Interactions**: Tap Pro/Con sides for instant round progression
 - **Mobile-First**: Responsive design optimized for touch
 
 ## 🚀 Quick Start
@@ -69,13 +71,14 @@
 - **Click Navigation**: Use bottom dots to jump to specific rounds
 - **Down Arrow**: Click to advance through rounds
 
-### Voting
-- **Button Taps**: Tap Pro, Tie, or Con buttons
+### Voting & Interaction
+- **Quick Tap Navigation**: On rounds 1-3, tap any Pro or Con section to advance
+- **Final Vote Buttons**: Use large Pro, Tie, or Con buttons on voting screen
 - **Gesture Voting**: 
   - Swipe ↑ = Vote Pro
   - Swipe ↓ = Vote Con  
   - Swipe ← or → = Vote Tie
-- **Flash Feedback**: Buttons flash when activated by gestures
+- **Visual Feedback**: Hover effects and flash animations for all interactions
 
 ### Sample Debates
 Experience 5 pre-loaded debates on topics like:

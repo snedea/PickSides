@@ -1,6 +1,6 @@
 import styles from './DebateCard.module.css'
 
-export default function DebateCard({ debate }) {
+export default function DebateCard({ debate, onProClick, onConClick }) {
   // Get the single round data (SwipeDebateContainer passes filtered data)
   const currentRound = debate.rounds[0]
 
@@ -13,7 +13,10 @@ export default function DebateCard({ debate }) {
           </div>
           
           <div className={styles.argumentsSplit}>
-            <div className={styles.proSide}>
+            <div 
+              className={`${styles.proSide} ${styles.clickable}`}
+              onClick={() => onProClick && onProClick()}
+            >
               <div className={`${styles.sideHeader} ${styles.proHeader}`}>
                 <h3>PRO</h3>
               </div>
@@ -25,7 +28,10 @@ export default function DebateCard({ debate }) {
               </div>
             </div>
             
-            <div className={styles.conSide}>
+            <div 
+              className={`${styles.conSide} ${styles.clickable}`}
+              onClick={() => onConClick && onConClick()}
+            >
               <div className={`${styles.sideHeader} ${styles.conHeader}`}>
                 <h3>CON</h3>
               </div>
