@@ -3,7 +3,16 @@
 import { useState } from 'react'
 import styles from './VotingCard.module.css'
 
-export default function VotingCard({ topic, onVote, hasVoted, votedFor }) {
+const getModelDisplayName = (modelId) => {
+  const modelNames = {
+    'gpt-4-turbo': 'ChatGPT',
+    'claude-3-sonnet': 'Claude',
+    'gemini-pro': 'Gemini'
+  };
+  return modelNames[modelId] || 'AI';
+};
+
+export default function VotingCard({ topic, proModel, conModel, onVote, hasVoted, votedFor }) {
   const [tieFlash, setTieFlash] = useState(false)
   const [proFlash, setProFlash] = useState(false)
   const [conFlash, setConFlash] = useState(false)
@@ -36,6 +45,13 @@ export default function VotingCard({ topic, onVote, hasVoted, votedFor }) {
       <div className={styles.votingCard}>
         <div className={styles.question}>
           <h2>Who won this debate?</h2>
+          {proModel && conModel && (
+            <div className={styles.modelMatchup}>
+              <span className={styles.proModelName}>{getModelDisplayName(proModel)}</span>
+              <span className={styles.vs}> vs </span>
+              <span className={styles.conModelName}>{getModelDisplayName(conModel)}</span>
+            </div>
+          )}
           <p className={styles.topic}>{topic}</p>
         </div>
         
