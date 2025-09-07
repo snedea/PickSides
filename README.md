@@ -1,68 +1,50 @@
-# PickSides 🔥
+# PickSides
 
-> AI debate platform where historical figures argue both sides and you pick the winner
+> **TikTok-style AI debate app with intelligent persona system and bilingual support**
 
-**Version 0.0.5** - AI Persona Revolution! Historical figures debate modern topics with enhanced navigation and user experience.
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.0.6-green.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Next.js-14-blue.svg" alt="Next.js">
+  <img src="https://img.shields.io/badge/AI-OpenAI%20%7C%20Claude%20%7C%20Gemini-purple.svg" alt="AI Models">
+  <img src="https://img.shields.io/badge/languages-English%20%7C%20Romanian-orange.svg" alt="Languages">
+</p>
+
+PickSides is a modern debate application that generates AI-powered debates between different personas on any topic. Experience engaging 3-round debates with historical figures, philosophers, or custom personalities in a TikTok-inspired interface.
 
 ## ✨ Features
 
-### 🎯 Core Experience
-- **AI Persona System**: Historical figures like Socrates, Einstein, and Ayn Rand debate modern topics
-- **Multi-AI Debates**: OpenAI, Anthropic Claude, and Google Gemini embody different personalities
-- **Button Navigation**: Clean, predictable navigation through visible controls (no confusing swipes)
-- **3-Round Structure**: Opening statements, rebuttals, and closing arguments with persona-influenced responses
-- **TL;DR Summaries**: Quick overview of each side's key points in character
-- **Multi-Language Support**: Full English/Romanian localization with culturally appropriate personas
-
-### ❤️ Heart-Button Voting System
-- **Explicit Heart Voting**: Clear ♡ and ❤️ buttons for intentional voting
-- **Vote Editing**: Tap filled hearts to unvote, change votes anytime
-- **Split → Tap → Enlarged → Vote Flow**: Tap sections to enlarge, then vote with hearts
-- **Vote Review**: "View My Votes" to see round-by-round choices
-- **Pre/Post-Vote States**: Confirmation screen with "Vote Again" option
-- **Auto-Advance**: Smooth progression after each round vote
-
-### 🎨 Design & UX  
-- **Dark Glassmorphism UI**: Modern, sleek interface with blur effects
-- **AI Persona Display**: Clear "CHATGPT AS SOCRATES" vs "CLAUDE AS AYN RAND" labeling
-- **Debate Overview Home Screen**: Grid-based layout with persona matchup previews
-- **Prominent Topic Header**: Large, readable debate questions with subtle shadows  
-- **Bottom Navigation Bar**: Emoji-based navigation with language toggle and home button
-- **Heart-Button Interface**: Intuitive ♡/❤️ voting with edit capability
-- **Button-Only Navigation**: No confusing swipes - all actions through visible controls
-- **Debate Management**: Delete debates with confirmation dialogs
-- **Mobile-First**: Responsive design optimized for touch
-
-### 🎭 AI Persona System
-- **7 Default Personas**: Socrates, Einstein, Ayn Rand, Shakespeare, Nietzsche, Tzara, plus Default AI
+### 🤖 **AI Persona System**
+- **7 Default Personas**: Socrates, Einstein, Ayn Rand, Shakespeare, Nietzsche, Tzara, and Default AI
 - **Custom Personas**: Add any historical figure, philosopher, or personality
-- **Persistent Library**: Save custom personas for future debates
-- **Persona Management**: Delete saved personas with confirmation
 - **Authentic Responses**: AIs embody personality, communication style, and philosophical views
-- **Multi-Language Personas**: Romanian names where appropriate (Socrates → Socrate)
+- **Multi-Model Support**: OpenAI GPT-4, Anthropic Claude, and Google Gemini
 
-### 🌐 Bilingual Cross-Language System
-- **Intelligent Language Switching**: Switch between English and Romanian instantly with smart fallbacks
-- **Asynchronous Generation**: Missing language content generated automatically in background
-- **Real-time Notifications**: Progress indicators when new language versions are being prepared
-- **Seamless UX**: Always see content immediately while enhanced versions load behind the scenes
-- **AI Language Consistency**: All models respond authentically in selected language with persona voices
-- **Complete Localization**: UI, prompts, personas, and error messages fully translated
-- **Persistent Language Settings**: Remembers your language preference with localStorage sync
+### 🌍 **Bilingual Support**
+- **Complete Localization**: English and Romanian with natural translations
+- **Smart Language Switching**: Seamless content switching with intelligent fallbacks
+- **Asynchronous Generation**: Background content generation without blocking UI
+- **Real-time Notifications**: Beautiful progress indicators and completion alerts
+
+### 📱 **Modern Mobile-First Design**
+- **TikTok-Style Interface**: Intuitive navigation optimized for mobile
+- **Heart-Button Voting**: Clear ♡/❤️ voting interface with edit capabilities
+- **Glassmorphism UI**: Dark theme with modern visual effects
+- **Button-Only Navigation**: Accessible, discoverable controls without hidden gestures
+
+### 🎯 **Enhanced User Experience**
+- **3-Round Debate Structure**: Opening, Counter-argument, and Closing statements
+- **TL;DR Summaries**: Quick scanning with detailed arguments available
+- **Visual Progress Tracking**: 🟢🔴⚪ indicators for debate completion status
+- **Vote Management**: Review, edit, and track all voting decisions
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+
-- Supabase account and project
-- AI API keys (OpenAI, Anthropic, Google)
-
-### Installation
+### Development Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/snedea/PickSides.git
-   cd PickSides
+   git clone <repository-url>
+   cd picksides
    ```
 
 2. **Install dependencies**
@@ -70,129 +52,161 @@
    npm install
    ```
 
-3. **Configure OpenAI API**
-   ```bash
-   cp .env.example .env.local
-   ```
-   Edit `.env.local` and add your OpenAI API key:
-   ```
-   OPENAI_API_KEY=your_api_key_here
+3. **Environment Configuration**
+   Create `.env.local` file:
+   ```env
+   OPENAI_API_KEY=your_openai_key
+   ANTHROPIC_API_KEY=your_claude_key
+   GOOGLE_API_KEY=your_gemini_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_key
    ```
 
 4. **Start development server**
    ```bash
    npm run dev
    ```
+   Visit `http://localhost:3000`
 
-5. **Open in browser**
-   Navigate to `http://localhost:3000`
+### Production Deployment
 
-## 🎮 How to Use
+#### Using PM2 (Recommended)
+
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+2. **Start with PM2**
+   ```bash
+   pm2 start ecosystem.config.js
+   ```
+
+3. **Monitor application**
+   ```bash
+   pm2 status
+   pm2 logs picksides
+   pm2 monit
+   ```
+
+The application will run on port 3002 in production mode with automatic restarts, memory management, and logging.
+
+## 🏗 Architecture
+
+### Tech Stack
+- **Frontend**: Next.js 14, React 18, CSS Modules
+- **Backend**: Next.js API Routes, Node.js
+- **Database**: Supabase (PostgreSQL)
+- **AI Models**: OpenAI GPT-4, Anthropic Claude, Google Gemini
+- **Process Manager**: PM2
+- **Styling**: CSS Modules with Glassmorphism effects
+
+### Component Structure
+```
+PickSides/
+├── app/
+│   ├── components/
+│   │   ├── SwipeDebateContainer.js    # Main debate logic
+│   │   ├── DebateCard.js              # Individual debate rounds
+│   │   ├── BottomNavBar.js            # Navigation controls
+│   │   ├── PersonaSelector.js         # Persona management
+│   │   └── DebateOverview.js          # Home screen grid
+│   ├── api/
+│   │   ├── debates/                   # Debate CRUD operations
+│   │   └── debate/
+│   │       └── generate-language/     # Bilingual generation
+│   └── contexts/
+│       └── LanguageContext.js         # Language state management
+├── ecosystem.config.js                # PM2 configuration
+└── CLAUDE.md                         # Development documentation
+```
+
+## 🎮 Usage
+
+### Creating Debates
+1. Click the **➕** button in the bottom navigation
+2. Enter your debate topic
+3. Select personas for Pro and Con sides
+4. Wait for AI generation (3-5 seconds)
 
 ### Navigation
-- **Bottom Dots**: Click to jump to specific rounds (1 → 2 → 3 → Voting)
-- **Down Arrow**: Click to advance through rounds
-- **Home Button**: 🏠 Navigate to debate overview grid
-- **Bottom Navigation**: Language toggle 🇬🇧/🇷🇴, page numbers 📄, add debates ➕
+- **🏠 Home**: Return to debate overview grid
+- **🇬🇧/🇷🇴**: Switch between English and Romanian
+- **📄**: Current debate position indicator
+- **⭐**: Future features placeholder
 
-### Voting & Interaction
-- **Heart-Button Voting**: Tap ♡ to vote, tap ❤️ to unvote or change vote
-- **Enlarged Reading Mode**: Tap Pro/Con sections to view full arguments
-- **Round-by-Round Voting**: Vote on each round individually (1, 2, 3)
-- **Vote Confirmation**: Review votes before finalizing with "Confirm Vote"
-- **Vote Management**: "View My Votes" and "Vote Again" options
-- **Visual Feedback**: Heart pulse animations and smooth transitions
+### Voting System
+1. Read through debate rounds (Opening → Counter → Closing)
+2. Tap heart buttons (♡) to vote on each round
+3. View final results and overall debate winner
+4. Edit votes anytime by tapping filled hearts (❤️)
 
-### Database Integration
-- **Persistent Storage**: All debates saved to Supabase PostgreSQL
-- **Vote Tracking**: Round-by-round and final votes stored locally and in database
-- **Real-time Updates**: Dynamic debate creation and management
-- **UUID-based IDs**: Proper database relationships and data integrity
-- **Clean Empty States**: Graceful handling when no debates exist
+## 🔧 Configuration
 
-## 🛠 Technical Stack
-
-- **Frontend**: Next.js 14, React 18
-- **Database**: Supabase PostgreSQL with real-time subscriptions and bilingual schema
-- **Styling**: CSS Modules with modern glassmorphism design
-- **AI Integration**: OpenAI GPT-4o-mini, Anthropic Claude, Google Gemini with persona system
-- **Bilingual System**: Asynchronous cross-language generation with intelligent fallbacks
-- **Real-time Updates**: WebSocket-style notifications for background generation progress
-- **Navigation**: Button-based navigation with predictable controls
-- **Responsive**: Mobile-first with progressive enhancement
-
-## 📱 Mobile Experience
-
-PickSides is designed mobile-first with:
-- Large, accessible touch targets for buttons and hearts
-- Button-based navigation (no confusing gestures)
-- Optimized typography for small screens with bright white persona names
-- Minimal cognitive load with clear visual hierarchy
-- One-handed operation support with bottom navigation
-
-## 🔧 Development
-
-### Project Structure
-```
-app/
-├── components/           # React components
-│   ├── DebateCard.js    # Single round display
-│   ├── VotingCard.js    # Voting interface
-│   └── SwipeDebateContainer.js  # Main navigation logic
-├── data/
-│   └── sampleDebates.js # Pre-loaded debate content
-├── api/
-│   └── debate/
-│       └── route.js     # OpenAI integration endpoint
-└── globals.css          # Base styles
+### PM2 Configuration (`ecosystem.config.js`)
+```javascript
+module.exports = {
+  apps: [{
+    name: 'picksides',
+    script: 'npm',
+    args: 'start',
+    cwd: '/path/to/picksides',
+    instances: 1,
+    exec_mode: 'fork',
+    autorestart: true,
+    max_memory_restart: '1G',
+    env_production: {
+      NODE_ENV: 'production',
+      PORT: 3002
+    }
+  }]
+}
 ```
 
-### Key Components
-- **SwipeDebateContainer**: Handles all navigation, button controls, and state
-- **DebateCard**: Displays Pro/Con arguments with persona names and TL;DR summaries
-- **PersonaSelector**: Dropdown for choosing AI personas with custom management  
-- **DebateOverview**: Grid-based home screen with persona matchup previews
-- **DebateTile**: Individual debate cards with persona vs persona display
-- **LanguageContext**: Manages internationalization, translations, and persona names
-- **BottomNavBar**: Emoji-based navigation with language toggle
+### Database Schema
+- **debates**: Topic, personas, rounds content, metadata
+- **votes**: User voting decisions per round and overall
+- **Bilingual structure**: Nested language objects for all content
 
-### API Endpoints
-- `POST /api/debate` - Generate new debates with persona-influenced AI responses
-- `GET /api/debates` - Fetch saved debates with intelligent language fallbacks
-- `GET /api/debates/[id]` - Fetch individual debates with bilingual support
-- `POST /api/debate/generate-language` - Asynchronous generation of missing language content
-- `DELETE /api/debates/[id]` - Delete individual debates and cleanup
-- `POST /api/vote` - Record user votes with debate tracking
-- Integrates with OpenAI, Anthropic, and Google AI models with persona system
-- Returns structured 3-round debate format with bilingual support and persistent storage
+## 🚀 Recent Updates (v0.0.6)
 
-## 🎯 Roadmap
+### Navigation Enhancement
+- **Home Button Prominence**: Moved to center with green styling for better user flow
+- **Improved Button Layout**: Optimized bottom navigation for one-handed operation
 
-- [ ] User-submitted debate topics
-- [ ] Social sharing of votes/debates
-- [ ] Debate statistics and analytics
-- [ ] Dark/light theme toggle
-- [ ] Accessibility enhancements
-- [ ] PWA support for mobile installation
+### Translation Improvements  
+- **Better Duplicate Prevention**: Enhanced queue management prevents redundant generation requests
+- **Error Recovery**: Graceful handling of translation failures with smart fallbacks
+- **Performance Optimization**: Reduced initial API calls from 12 to 3
+
+### Development Infrastructure
+- **PM2 Support**: Production-ready process management with logging and auto-restart
+- **Hot Reload Stability**: Enhanced dev/production mode switching
+- **Build Optimization**: Better CSS module handling and development server reliability
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+PickSides is built entirely with [Claude Code](https://claude.ai/code). The development process is documented in `CLAUDE.md` with detailed phase-by-phase improvements.
 
-## 📄 License
+### Development Philosophy
+- **Mobile-first design**: 375px viewport optimization
+- **Accessibility-focused**: Large touch targets, high contrast, semantic HTML
+- **Performance-optimized**: Hardware-accelerated CSS, efficient re-renders
+- **AI-powered**: Multiple model support with intelligent persona system
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 📝 License
 
-## 🙏 Acknowledgments
+MIT License - see LICENSE file for details.
 
-- Built with [Claude Code](https://claude.ai/code)
-- Powered by OpenAI GPT-4o-mini, Anthropic Claude, and Google Gemini
-- Enhanced with asynchronous bilingual generation system
+## 🔗 Links
+
+- **Documentation**: See `CLAUDE.md` for comprehensive development history
+- **AI Models**: [OpenAI](https://openai.com) | [Anthropic](https://anthropic.com) | [Google AI](https://ai.google.dev/)
+- **Database**: [Supabase](https://supabase.com)
+- **Process Management**: [PM2](https://pm2.keymetrics.io/)
 
 ---
 
-**Ready to pick sides?** 🔥 Choose your personas and let the debates begin!
+**Built with ❤️ using [Claude Code](https://claude.ai/code)**
+
+*Experience the future of AI-powered debates with PickSides - where every argument matters and every voice is heard.*

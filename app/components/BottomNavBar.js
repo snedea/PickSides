@@ -31,22 +31,22 @@ export default function BottomNavBar({
         </span>
       </button>
 
-      {/* Add topic button (center, standout) */}
+      {/* Home button (center, standout) */}
       <button 
         className={`${styles.navItem} ${styles.addButton}`}
-        onClick={onAddTopic}
-        aria-label="Add new debate topic"
-      >
-        <span className={styles.addIcon}>➕</span>
-      </button>
-
-      {/* Home button */}
-      <button 
-        className={styles.navItem}
         onClick={onHome}
         aria-label="Go to home"
       >
         <span className={styles.homeIcon}>🏠</span>
+      </button>
+
+      {/* Add topic button */}
+      <button 
+        className={styles.navItem}
+        onClick={onAddTopic}
+        aria-label="Add new debate topic"
+      >
+        <span className={styles.addIcon}>➕</span>
       </button>
 
       {/* Placeholder for balance */}

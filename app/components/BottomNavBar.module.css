@@ -50,7 +50,7 @@
   transform: none;
 }
 
-/* Add button - center standout */
+/* Center prominent button (now Home button) */
 .addButton {
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);

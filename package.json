@@ -1,6 +1,6 @@
 {
   "name": "picksides",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "description": "TikTok-style AI debate app with swipe navigation and gesture voting",
   "scripts": {
     "dev": "next dev",
@@ -16,6 +16,7 @@
     "dotenv": "^17.2.2",
     "next": "^14.0.0",
     "openai": "^4.0.0",
+    "pm2": "^6.0.10",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },

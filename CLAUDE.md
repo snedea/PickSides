@@ -118,6 +118,19 @@ This document chronicles the development of PickSides, a TikTok-style debate app
 - **Error Handling**: Graceful degradation with intelligent error recovery and user feedback
 - **Visual Polish**: CSS animations, progress indicators, and smooth transitions for premium UX
 
+### Phase 12: Navigation Enhancement & Development Infrastructure (v0.0.6)
+- **Home Button Prominence**: Moved Home button to center position with green styling for better user flow
+- **Improved Bottom Navigation**: Swapped Home and Add button positions, making Home the primary center action
+- **Enhanced User Experience**: Home button now has the prominent green gradient and scaling effects
+- **Better Translation Handling**: Improved duplicate prevention in bilingual content generation
+- **Error Recovery Enhancement**: More robust handling of translation failures with intelligent fallbacks
+- **PM2 Production Support**: Added `ecosystem.config.js` for stable production deployment
+- **Process Management**: Auto-restart capabilities, memory management, and comprehensive logging
+- **Development Infrastructure**: Enhanced dev/production mode switching with better hot-reload stability
+- **Port Configuration**: Production deployment on port 3002 with proper environment handling
+- **Build Optimization**: Improved CSS module handling and development server reliability
+- **Documentation Enhancement**: Complete README.md overhaul with proper PickSides branding and setup instructions
+
 ## 🏗 Architecture Decisions
 
 ### Component Structure
