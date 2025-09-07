@@ -2,6 +2,8 @@ export const sampleDebates = [
   {
     id: 1,
     topic: "Should artificial intelligence be regulated by governments",
+    pro_model: "claude-3-sonnet",
+    con_model: "gpt-4-turbo",
     rounds: [
       {
         round: 1,
@@ -32,6 +34,8 @@ export const sampleDebates = [
   {
     id: 2,
     topic: "Should social media platforms be held liable for misinformation",
+    pro_model: "gpt-4-turbo",
+    con_model: "gemini-pro",
     rounds: [
       {
         round: 1,
@@ -62,6 +66,8 @@ export const sampleDebates = [
   {
     id: 3,
     topic: "Should remote work become the default for office jobs",
+    pro_model: "gemini-pro",
+    con_model: "claude-3-sonnet",
     rounds: [
       {
         round: 1,
@@ -92,6 +98,8 @@ export const sampleDebates = [
   {
     id: 4,
     topic: "Should college education be free for everyone",
+    pro_model: "claude-3-sonnet",
+    con_model: "gemini-pro",
     rounds: [
       {
         round: 1,
@@ -122,6 +130,8 @@ export const sampleDebates = [
   {
     id: 5,
     topic: "Should genetic engineering of human embryos be allowed",
+    pro_model: "gpt-4-turbo",
+    con_model: "claude-3-sonnet",
     rounds: [
       {
         round: 1,

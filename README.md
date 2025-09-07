@@ -2,15 +2,16 @@
 
 > TikTok-style debate app where AI argues both sides and you pick the winner
 
-**Version 0.0.3** - Heart-Button Voting Revolution! Explicit voting with heart buttons, vote editing capability, and enhanced user experience.
+**Version 0.0.4** - Complete Internationalization & Management! Multi-language support, debate overview home screen, and enhanced AI consistency.
 
 ## ✨ Features
 
 ### 🎯 Core Experience
 - **TikTok-Style Navigation**: Swipe up/down through debate rounds, left/right between debates
-- **AI-Generated Debates**: OpenAI GPT-4o-mini creates balanced Pro/Con arguments
+- **Multi-AI Debates**: OpenAI, Anthropic Claude, and Google Gemini create balanced arguments
 - **3-Round Structure**: Opening statements, rebuttals, and closing arguments
 - **TL;DR Summaries**: Quick overview of each side's key points
+- **Multi-Language Support**: Full English/Romanian localization with proper AI responses
 
 ### ❤️ Heart-Button Voting System
 - **Explicit Heart Voting**: Clear ♡ and ❤️ buttons for intentional voting
@@ -22,17 +23,25 @@
 
 ### 🎨 Design & UX  
 - **Dark Glassmorphism UI**: Modern, sleek interface with blur effects
+- **Debate Overview Home Screen**: Grid-based layout with visual progress indicators
 - **Prominent Topic Header**: Large, readable debate questions with subtle shadows
-- **Infinite Carousel**: Seamlessly loop from debate 5/5 → 1/5
-- **Clickable Navigation**: Dots and arrows for precise control
+- **Bottom Navigation Bar**: Emoji-based navigation with language toggle and home button
 - **Heart-Button Interface**: Intuitive ♡/❤️ voting with edit capability
+- **Debate Management**: Delete debates with confirmation dialogs
 - **Mobile-First**: Responsive design optimized for touch
+
+### 🌐 Internationalization
+- **Language Toggle**: Switch between English and Romanian instantly
+- **AI Language Consistency**: All models respond in selected language
+- **Complete Localization**: UI, prompts, and error messages fully translated
+- **Persistent Language Settings**: Remembers your language preference
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- OpenAI API key
+- Supabase account and project
+- AI API keys (OpenAI, Anthropic, Google)
 
 ### Installation
 
@@ -80,19 +89,20 @@
 - **Vote Management**: "View My Votes" and "Vote Again" options
 - **Visual Feedback**: Heart pulse animations and smooth transitions
 
-### Sample Debates
-Experience 5 pre-loaded debates on topics like:
-- AI regulation and safety
-- Social media platform liability
-- Remote work productivity
-- Free college education
-- Genetic engineering ethics
+### Database Integration
+- **Persistent Storage**: All debates saved to Supabase PostgreSQL
+- **Vote Tracking**: Round-by-round and final votes stored locally and in database
+- **Real-time Updates**: Dynamic debate creation and management
+- **UUID-based IDs**: Proper database relationships and data integrity
+- **Clean Empty States**: Graceful handling when no debates exist
 
 ## 🛠 Technical Stack
 
 - **Frontend**: Next.js 14, React 18
+- **Database**: Supabase PostgreSQL with real-time subscriptions
 - **Styling**: CSS Modules with modern glassmorphism design
-- **AI Integration**: OpenAI GPT-4o-mini
+- **AI Integration**: OpenAI GPT-4o-mini, Anthropic Claude, Google Gemini
+- **Internationalization**: React Context with English/Romanian support
 - **Navigation**: Custom touch/swipe handling
 - **Responsive**: Mobile-first with progressive enhancement
 
@@ -125,12 +135,18 @@ app/
 ### Key Components
 - **SwipeDebateContainer**: Handles all navigation, gestures, and state
 - **DebateCard**: Displays Pro/Con arguments with TL;DR summaries  
-- **VotingCard**: Large voting buttons with gesture support
+- **DebateOverview**: Grid-based home screen with visual progress indicators
+- **DebateTile**: Individual debate cards with status and delete functionality
+- **LanguageContext**: Manages internationalization and translations
+- **BottomNavBar**: Emoji-based navigation with language toggle
 
-### API Endpoint
-- `POST /api/debate` - Generate new debates from topics
-- Integrates with OpenAI GPT-4o-mini
-- Returns structured 3-round debate format
+### API Endpoints
+- `POST /api/debate` - Generate new debates from topics with language support
+- `GET /api/debates` - Fetch saved debates from database
+- `DELETE /api/debates/[id]` - Delete individual debates
+- `POST /api/vote` - Record user votes
+- Integrates with OpenAI, Anthropic, and Google AI models
+- Returns structured 3-round debate format with persistent storage
 
 ## 🎯 Roadmap
 

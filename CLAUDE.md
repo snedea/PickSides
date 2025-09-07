@@ -45,6 +45,46 @@ This document chronicles the development of PickSides, a TikTok-style debate app
 - **Heart Pulse Animation**: 0.25s visual feedback with haptic support on mobile devices
 - **Complete Overlay Removal**: Eliminated complex RoundVoteOverlay system entirely
 
+### Phase 7: Database Integration (Supabase Foundation)
+- **PostgreSQL Backend**: Migrated from sample debates to persistent Supabase storage
+- **Debate Persistence**: All user-created debates saved with UUID-based identification
+- **Vote Tracking**: Comprehensive vote storage with round-by-round and final vote records
+- **Real-time Data**: Dynamic loading and creation of debates with proper error handling
+- **Data Relationships**: Proper foreign key relationships between debates, votes, and users
+
+### Phase 8: Bottom Navigation Revolution 
+- **Modern Bottom Bar**: Moved page numbers, language toggle, and + button to bottom navigation
+- **Emoji-Based Icons**: Intuitive 🏠📄🇺🇸/🇷🇴➕ interface with accessibility labels
+- **Standout Add Button**: Green center button with enhanced visual prominence
+- **Unified Navigation**: Single location for all primary navigation actions
+- **Mobile-Optimized**: Thumb-friendly positioning for one-handed operation
+
+### Phase 9: Multi-Language Support (Complete Internationalization)
+- **Full Romanian Localization**: Complete UI translation with natural Romanian language
+- **AI Language Consistency**: All models (OpenAI, Claude, Gemini) respond in selected language
+- **Context-Aware Translation**: Dynamic round types, prompts, and UI elements
+- **Persistent Language Settings**: User preference saved across sessions with localStorage
+- **Language Toggle**: Flag-based switcher with instant UI updates
+- **Enhanced AI Prompts**: System messages and language instructions for consistent responses
+
+### Phase 10: Debate Overview & Management (Home Screen Revolution)
+- **Grid-Based Overview**: Comprehensive home screen showing all debates with visual status
+- **Visual Progress Indicators**: 🟢🔴⚪ emoji system for round-by-round vote tracking
+- **Completion States**: Clear distinction between Not Started, In Progress, Completed, and Finalized
+- **Heart Status Icons**: ❤️ indicators for completed debates creating FOMO effect
+- **Smart Navigation**: Click tiles to jump to appropriate round or view results
+- **Delete Functionality**: Gray × buttons in top-right corner with confirmation dialogs
+- **Empty State Handling**: "Nothing here. Why not pick sides?" with language support
+- **Model Display**: Clear "ChatGPT vs Claude" labels with proper model name mapping
+
+### Phase 10.1: Enhanced Management & Polish (v0.0.4)
+- **Delete API Endpoints**: Complete DELETE functionality with proper database cleanup
+- **Romanian Language Consistency**: Stronger AI language enforcement with system messages
+- **Clean Empty States**: Removed sample debate fallback for true fresh start experience
+- **Model Name Mapping**: Fixed "Unknown vs Unknown" display with proper model identification
+- **Cross-Language Context Protection**: Enhanced prompts prevent language contamination
+- **Persistent Vote Management**: Comprehensive localStorage integration with database sync
+
 ## 🏗 Architecture Decisions
 
 ### Component Structure

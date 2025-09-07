@@ -1,19 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useLanguage } from '../../contexts/LanguageContext'
 import DebateCard from './DebateCard'
 import VotingCard from './VotingCard'
 import TopicSubmissionCard from './TopicSubmissionCard'
 import FinalResultsCard from './FinalResultsCard'
+import BottomNavBar from './BottomNavBar'
+import DebateOverview from './DebateOverview'
 import styles from './SwipeDebateContainer.module.css'
 
 export default function SwipeDebateContainer() {
+  const { language } = useLanguage()
   const [debates, setDebates] = useState([])
   const [currentDebateIndex, setCurrentDebateIndex] = useState(0)
   const [currentRound, setCurrentRound] = useState(1) // 1, 2, 3 for rounds, 4 for voting
-  const [votes, setVotes] = useState({}) // Track votes by debate ID
+  const [votes, setVotes] = useState({}) // Track final debate votes by debate ID
+  const [roundVotes, setRoundVotes] = useState({}) // Track round-by-round votes by debate ID
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [showSubmissionForm, setShowSubmissionForm] = useState(false)
+  const [showOverview, setShowOverview] = useState(true)
   const [isGeneratingDebate, setIsGeneratingDebate] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
@@ -45,10 +51,22 @@ export default function SwipeDebateContainer() {
 
   // Handle round voting
   const handleRoundVote = (roundNumber, side) => {
+    const currentDebate = debates[currentDebateIndex]
+    if (!currentDebate) return
+    
     // Update round winners
     setRoundWinners(prev => ({
       ...prev,
       [`round${roundNumber}`]: side
+    }))
+    
+    // Update persistent round votes
+    setRoundVotes(prev => ({
+      ...prev,
+      [currentDebate.id]: {
+        ...prev[currentDebate.id],
+        [`round${roundNumber}`]: side
+      }
     }))
     
     // Auto-advance after voting with delay
@@ -62,25 +80,123 @@ export default function SwipeDebateContainer() {
 
   // Handle unvoting (removing a vote)
   const handleUnvote = (roundNumber) => {
+    const currentDebate = debates[currentDebateIndex]
+    if (!currentDebate) return
+    
     setRoundWinners(prev => ({
       ...prev,
       [`round${roundNumber}`]: null
     }))
+    
+    // Update persistent round votes
+    setRoundVotes(prev => {
+      const debateVotes = { ...prev[currentDebate.id] }
+      delete debateVotes[`round${roundNumber}`]
+      return {
+        ...prev,
+        [currentDebate.id]: debateVotes
+      }
+    })
   }
 
   // Handle voting again (reset all votes)
   const handleVoteAgain = () => {
+    const currentDebate = debates[currentDebateIndex]
+    if (!currentDebate) return
+    
     setRoundWinners({
       round1: null,
       round2: null,
       round3: null
     })
+    
+    // Clear persistent round votes for this debate
+    setRoundVotes(prev => ({
+      ...prev,
+      [currentDebate.id]: {}
+    }))
+    
+    // Also clear final vote if exists
+    setVotes(prev => {
+      const newVotes = { ...prev }
+      delete newVotes[currentDebate.id]
+      return newVotes
+    })
+    
     setCurrentRound(1)
   }
 
   // Handle viewing votes (go back to round 1)
   const handleViewVotes = () => {
     setCurrentRound(1)
+  }
+
+  // Handle home button
+  const handleHome = () => {
+    setShowOverview(true)
+    setShowSubmissionForm(false)
+  }
+
+  // Handle debate selection from overview
+  const handleDebateSelect = (debate, targetRound = 1, targetState = 'round') => {
+    const debateIndex = debates.findIndex(d => d.id === debate.id)
+    if (debateIndex !== -1) {
+      setCurrentDebateIndex(debateIndex)
+      setCurrentRound(targetRound)
+      
+      // Load round winners from persistent storage
+      const persistentRoundVotes = roundVotes[debate.id] || {}
+      setRoundWinners({
+        round1: persistentRoundVotes.round1 || null,
+        round2: persistentRoundVotes.round2 || null,
+        round3: persistentRoundVotes.round3 || null
+      })
+      
+      setShowOverview(false)
+    }
+  }
+
+  // Handle debate deletion
+  const handleDebateDelete = async (debateId) => {
+    try {
+      // Call delete API
+      const response = await fetch(`/api/debates/${debateId}`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete debate')
+      }
+      
+      // Remove from local state
+      setDebates(prev => prev.filter(d => d.id !== debateId))
+      
+      // Clean up votes from localStorage
+      setVotes(prev => {
+        const newVotes = { ...prev }
+        delete newVotes[debateId]
+        return newVotes
+      })
+      
+      setRoundVotes(prev => {
+        const newRoundVotes = { ...prev }
+        delete newRoundVotes[debateId]
+        return newRoundVotes
+      })
+      
+      // Reset current debate if we deleted the one being viewed
+      const currentDebate = debates[currentDebateIndex]
+      if (currentDebate && currentDebate.id === debateId) {
+        setCurrentDebateIndex(0)
+        setCurrentRound(1)
+        setRoundWinners({ round1: null, round2: null, round3: null })
+        setShowOverview(true)
+      }
+      
+    } catch (error) {
+      console.error('Error deleting debate:', error)
+      alert('Failed to delete debate. Please try again.')
+    }
   }
 
   // Load debates from database on mount
@@ -96,26 +212,12 @@ export default function SwipeDebateContainer() {
         }
         
         const debatesData = await response.json()
-        
-        if (debatesData.length === 0) {
-          // If no debates in database, load sample debates as fallback
-          const { sampleDebates } = await import('../data/sampleDebates')
-          setDebates(sampleDebates)
-        } else {
-          setDebates(debatesData)
-        }
+        setDebates(debatesData)
         
       } catch (error) {
         console.error('Error loading debates:', error)
         setLoadError('Failed to load debates. Please try again.')
-        
-        // Load sample debates as fallback
-        try {
-          const { sampleDebates } = await import('../data/sampleDebates')
-          setDebates(sampleDebates)
-        } catch (fallbackError) {
-          console.error('Failed to load fallback debates:', fallbackError)
-        }
+        setDebates([]) // Set empty array on error
       } finally {
         setIsLoading(false)
       }
@@ -123,6 +225,42 @@ export default function SwipeDebateContainer() {
     
     loadDebates()
   }, [])
+
+  // Load persistent votes from localStorage
+  useEffect(() => {
+    try {
+      const savedVotes = localStorage.getItem('debate_final_votes')
+      const savedRoundVotes = localStorage.getItem('debate_round_votes')
+      
+      if (savedVotes) {
+        setVotes(JSON.parse(savedVotes))
+      }
+      
+      if (savedRoundVotes) {
+        setRoundVotes(JSON.parse(savedRoundVotes))
+      }
+    } catch (error) {
+      console.error('Error loading persistent votes:', error)
+    }
+  }, [])
+
+  // Save final votes to localStorage whenever votes change
+  useEffect(() => {
+    try {
+      localStorage.setItem('debate_final_votes', JSON.stringify(votes))
+    } catch (error) {
+      console.error('Error saving final votes:', error)
+    }
+  }, [votes])
+
+  // Save round votes to localStorage whenever roundVotes change
+  useEffect(() => {
+    try {
+      localStorage.setItem('debate_round_votes', JSON.stringify(roundVotes))
+    } catch (error) {
+      console.error('Error saving round votes:', error)
+    }
+  }, [roundVotes])
   
   const handleTouchStart = (e) => {
     setTouchEnd(null)
@@ -244,14 +382,27 @@ export default function SwipeDebateContainer() {
   const nextDebate = () => {
     if (!isTransitioning) {
       setIsTransitioning(true)
-      setCurrentDebateIndex(prev => prev < debates.length - 1 ? prev + 1 : 0)
+      const newIndex = currentDebateIndex < debates.length - 1 ? currentDebateIndex + 1 : 0
+      setCurrentDebateIndex(newIndex)
       setCurrentRound(1)
-      // Reset round voting state for new debate
-      setRoundWinners({
-        round1: null,
-        round2: null,
-        round3: null
-      })
+      
+      // Load round voting state for new debate from persistent storage
+      const newDebate = debates[newIndex]
+      if (newDebate) {
+        const persistentRoundVotes = roundVotes[newDebate.id] || {}
+        setRoundWinners({
+          round1: persistentRoundVotes.round1 || null,
+          round2: persistentRoundVotes.round2 || null,
+          round3: persistentRoundVotes.round3 || null
+        })
+      } else {
+        setRoundWinners({
+          round1: null,
+          round2: null,
+          round3: null
+        })
+      }
+      
       setTimeout(() => setIsTransitioning(false), 300)
     }
   }
@@ -259,14 +410,27 @@ export default function SwipeDebateContainer() {
   const previousDebate = () => {
     if (!isTransitioning) {
       setIsTransitioning(true)
-      setCurrentDebateIndex(prev => prev > 0 ? prev - 1 : debates.length - 1)
+      const newIndex = currentDebateIndex > 0 ? currentDebateIndex - 1 : debates.length - 1
+      setCurrentDebateIndex(newIndex)
       setCurrentRound(1)
-      // Reset round voting state for new debate
-      setRoundWinners({
-        round1: null,
-        round2: null,
-        round3: null
-      })
+      
+      // Load round voting state for new debate from persistent storage
+      const newDebate = debates[newIndex]
+      if (newDebate) {
+        const persistentRoundVotes = roundVotes[newDebate.id] || {}
+        setRoundWinners({
+          round1: persistentRoundVotes.round1 || null,
+          round2: persistentRoundVotes.round2 || null,
+          round3: persistentRoundVotes.round3 || null
+        })
+      } else {
+        setRoundWinners({
+          round1: null,
+          round2: null,
+          round3: null
+        })
+      }
+      
       setTimeout(() => setIsTransitioning(false), 300)
     }
   }
@@ -355,7 +519,7 @@ export default function SwipeDebateContainer() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic, proModel, conModel })
+        body: JSON.stringify({ topic, proModel, conModel, language })
       })
       
       if (!response.ok) {
@@ -369,6 +533,14 @@ export default function SwipeDebateContainer() {
       setCurrentDebateIndex(debates.length) // Navigate to new debate
       setCurrentRound(1)
       setShowSubmissionForm(false)
+      setShowOverview(false) // Exit overview if we were there
+      
+      // Initialize empty voting state for new debate
+      setRoundWinners({
+        round1: null,
+        round2: null,
+        round3: null
+      })
       
     } catch (error) {
       console.error('Error generating debate:', error)
@@ -399,6 +571,28 @@ export default function SwipeDebateContainer() {
     )
   }
 
+  // Show overview screen if requested
+  if (showOverview) {
+    return (
+      <div className={styles.container}>
+        <DebateOverview 
+          debates={debates}
+          roundVotes={roundVotes}
+          finalVotes={votes}
+          onDebateSelect={handleDebateSelect}
+          onAddTopic={() => setShowSubmissionForm(true)}
+          onDebateDelete={handleDebateDelete}
+        />
+        <BottomNavBar 
+          currentDebate={currentDebateIndex + 1}
+          totalDebates={debates.length}
+          onAddTopic={() => setShowSubmissionForm(true)}
+          onHome={handleHome}
+        />
+      </div>
+    )
+  }
+
   // Show loading state
   if (isLoading) {
     return (
@@ -414,19 +608,24 @@ export default function SwipeDebateContainer() {
     )
   }
 
-  // Show error state if no debates loaded
-  if (debates.length === 0) {
+  // Show overview with empty state if no debates loaded
+  if (debates.length === 0 && !isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <p>No debates available.</p>
-          <button 
-            className={styles.retryButton}
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
-        </div>
+        <DebateOverview 
+          debates={[]}
+          roundVotes={{}}
+          finalVotes={{}}
+          onDebateSelect={() => {}}
+          onAddTopic={() => setShowSubmissionForm(true)}
+          onDebateDelete={() => {}}
+        />
+        <BottomNavBar 
+          currentDebate={0}
+          totalDebates={0}
+          onAddTopic={() => setShowSubmissionForm(true)}
+          onHome={() => setShowOverview(true)}
+        />
       </div>
     )
   }
@@ -440,18 +639,6 @@ export default function SwipeDebateContainer() {
     >
       {/* Fixed Topic Header */}
       <div className={styles.fixedHeader}>
-        <div className={styles.indicators}>
-          <div className={styles.debateIndicator}>
-            {debates.length > 0 ? `${currentDebateIndex + 1} / ${debates.length}` : '0 / 0'}
-          </div>
-          <button 
-            className={styles.addTopicButton}
-            onClick={() => setShowSubmissionForm(true)}
-            aria-label="Add new topic"
-          >
-            +
-          </button>
-        </div>
         <div className={styles.fixedTopic}>
           <h1>{currentDebate?.topic || 'Loading...'}</h1>
         </div>
@@ -513,7 +700,13 @@ export default function SwipeDebateContainer() {
         ) : null}
       </div>
 
-
+      {/* Bottom Navigation Bar */}
+      <BottomNavBar 
+        currentDebate={currentDebateIndex + 1}
+        totalDebates={debates.length}
+        onAddTopic={() => setShowSubmissionForm(true)}
+        onHome={handleHome}
+      />
     </div>
   )
 }

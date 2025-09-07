@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLanguage } from '../../contexts/LanguageContext'
 import styles from './FinalResultsCard.module.css'
 
 const getModelDisplayName = (modelId) => {
@@ -32,6 +33,7 @@ export default function FinalResultsCard({
   onViewVotes
 }) {
   const [hasVoted, setHasVoted] = useState(false)
+  const { t } = useLanguage()
 
   // Calculate winner and score
   const calculateWinner = () => {
@@ -73,10 +75,10 @@ export default function FinalResultsCard({
   const conModelName = getModelDisplayName(conModel)
 
   const getRoundLabel = (round, winner) => {
-    if (!winner) return 'Not voted'
-    if (winner === 'pro') return `Pro (${proModelName})`
-    if (winner === 'con') return `Con (${conModelName})`
-    return 'Not voted'
+    if (!winner) return t('ui.loading') // Using loading as placeholder for "not voted"
+    if (winner === 'pro') return `${t('ui.pro')} (${proModelName})`
+    if (winner === 'con') return `${t('ui.con')} (${conModelName})`
+    return t('ui.loading')
   }
 
   const handleConfirm = () => {
@@ -84,7 +86,10 @@ export default function FinalResultsCard({
   }
 
   const handleVoteAgain = () => {
-    if (confirm('This will erase your current votes. Continue?')) {
+    const confirmMessage = t('language') === 'ro' 
+      ? 'Aceasta va șterge voturile tale curente. Continui?'
+      : 'This will erase your current votes. Continue?'
+    if (confirm(confirmMessage)) {
       onVoteAgain()
     }
   }
@@ -97,9 +102,9 @@ export default function FinalResultsCard({
           {/* Confirmation */}
           <div className={styles.header}>
             <div className={styles.confirmationIcon}>✅</div>
-            <h1 className={styles.title}>Vote Recorded!</h1>
+            <h1 className={styles.title}>{t('ui.voteRecorded')}</h1>
             <p className={styles.topic}>
-              {result.display} won {result.score.pro}-{result.score.con}
+              {result.display} {t('ui.wins')} {result.score.pro}-{result.score.con}
             </p>
           </div>
 
@@ -109,7 +114,7 @@ export default function FinalResultsCard({
               className={`${styles.continueButton} ${styles.primary}`}
               onClick={onContinue}
             >
-              <span className={styles.continueText}>Continue to Next Debate</span>
+              <span className={styles.continueText}>{t('ui.continueToNext')}</span>
               <span className={styles.arrow}>→</span>
             </button>
           </div>
@@ -120,13 +125,13 @@ export default function FinalResultsCard({
               onClick={onViewVotes}
               className={styles.secondaryButton}
             >
-              View My Votes
+{t('ui.viewVotes')}
             </button>
             <button
               onClick={handleVoteAgain}
               className={styles.secondaryButton}
             >
-              Vote Again
+{t('ui.voteAgain')}
             </button>
           </div>
         </div>
@@ -142,20 +147,20 @@ export default function FinalResultsCard({
         <div className={styles.header}>
           <div className={styles.winnerIcon}>🏆</div>
           <h1 className={styles.title}>
-            {result.display} Wins!
+{result.display} {t('ui.winnerAnnouncement')}
           </h1>
           <p className={styles.scoreDisplay}>
-            Final Score: {result.score.pro} - {result.score.con}
+{t('ui.finalScore')}: {result.score.pro} - {result.score.con}
           </p>
         </div>
 
         {/* Round Breakdown */}
         <div className={styles.roundBreakdown}>
-          <h3 className={styles.breakdownTitle}>YOUR ROUND VOTES</h3>
+          <h3 className={styles.breakdownTitle}>{t('ui.yourRoundVotes')}</h3>
           <div className={styles.rounds}>
             {[1, 2, 3].map(round => (
               <div key={round} className={styles.roundResult}>
-                <div className={styles.roundNumber}>Round {round}</div>
+                <div className={styles.roundNumber}>{t('ui.round')} {round}</div>
                 <div className={`${styles.roundWinner} ${roundWinners[`round${round}`] === 'pro' ? styles.proWin : styles.conWin}`}>
                   {getRoundLabel(round, roundWinners[`round${round}`])} ✓
                 </div>
@@ -171,7 +176,7 @@ export default function FinalResultsCard({
             onClick={handleConfirm}
           >
             <div className={styles.confirmIcon}>❤️</div>
-            <div className={styles.confirmText}>Confirm Vote</div>
+            <div className={styles.confirmText}>{t('ui.confirmVote')}</div>
           </button>
         </div>
 
@@ -181,7 +186,7 @@ export default function FinalResultsCard({
             onClick={onViewVotes}
             className={styles.reviewButton}
           >
-            ← Review my round votes
+{t('ui.reviewVotes')}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLanguage } from '../../contexts/LanguageContext'
 import styles from './DebateCard.module.css'
 
 const getModelDisplayName = (modelId) => {
@@ -24,10 +25,24 @@ const getModelClass = (modelId) => {
 export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roundWinners }) {
   const [enlargedSide, setEnlargedSide] = useState(null)
   const [showVoteAnimation, setShowVoteAnimation] = useState(false)
+  const { t } = useLanguage()
 
   // Get the single round data (SwipeDebateContainer passes filtered data)
   const currentRound = debate.rounds[0]
   const currentVote = roundWinners[`round${roundNumber}`]
+
+  // Helper function to translate round types
+  const getRoundTypeTranslation = (roundType) => {
+    const typeMap = {
+      'Opening': 'rounds.opening',
+      'Counter': 'rounds.counter', 
+      'Closing': 'rounds.closing',
+      'Deschidere': 'rounds.opening',
+      'Contraargument': 'rounds.counter',
+      'Închidere': 'rounds.closing'
+    }
+    return t(typeMap[roundType] || 'rounds.opening')
+  }
 
   const handleSectionTap = (side) => {
     setEnlargedSide(side)
@@ -84,7 +99,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
               {getModelDisplayName(sideData.model)}
             </h3>
             <span className={`${styles.enlargedStance} ${enlargedSide === 'pro' ? styles.proStance : styles.conStance}`}>
-              {enlargedSide.toUpperCase()} - Round {roundNumber}
+              {enlargedSide === 'pro' ? t('ui.pro') : t('ui.con')} - {t('ui.round')} {roundNumber}
             </span>
           </div>
           
@@ -116,7 +131,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
 
         {/* Bottom hint */}
         <div className={styles.enlargedHints}>
-          <p>Tap anywhere to return to comparison view</p>
+          <p>{t('ui.tapAnywhere')}</p>
         </div>
       </div>
     )
@@ -127,7 +142,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
     <div className={styles.debateContainer}>
       {/* Round indicator with vote history */}
       <div className={styles.progressHeader}>
-        <span className={styles.roundLabel}>Round {roundNumber} of 3</span>
+        <span className={styles.roundLabel}>{t('ui.round')} {roundNumber} {t('ui.roundOf')} 3</span>
         <div className={styles.progressDots}>
           {[1, 2, 3].map(num => {
             const vote = roundWinners[`round${num}`]
@@ -152,7 +167,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
       <div className={styles.roundsContainer}>
         <div className={styles.round}>
           <div className={styles.roundHeader}>
-            <h2>Round {currentRound.round}: {currentRound.type}</h2>
+            <h2>{t('ui.round')} {currentRound.round}: {getRoundTypeTranslation(currentRound.type)}</h2>
           </div>
           
           {/* Debate arguments */}
@@ -178,7 +193,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
                   <div className={`${styles.modelName} ${styles.proModel} ${styles[getModelClass(debate.pro_model)]}`}>
                     {getModelDisplayName(debate.pro_model)}
                   </div>
-                  <h3>PRO</h3>
+                  <h3>{t('ui.pro')}</h3>
                 </div>
                 <div className={`${styles.tldr} ${styles.proTldr}`}>
                   {currentRound.proTldr}
@@ -210,7 +225,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
                   <div className={`${styles.modelName} ${styles.conModel} ${styles[getModelClass(debate.con_model)]}`}>
                     {getModelDisplayName(debate.con_model)}
                   </div>
-                  <h3>CON</h3>
+                  <h3>{t('ui.con')}</h3>
                 </div>
                 <div className={`${styles.tldr} ${styles.conTldr}`}>
                   {currentRound.conTldr}
@@ -226,7 +241,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
 
       {/* Bottom hint */}
       <div className={styles.bottomHint}>
-        <p>Tap text to read full argument • Tap ♡ to vote</p>
+        <p>{t('ui.tapToRead')}</p>
       </div>
     </div>
   )
