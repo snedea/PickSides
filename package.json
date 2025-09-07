@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:bilingual": "node scripts/migrate-to-bilingual.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.61.0",

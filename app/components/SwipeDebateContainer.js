@@ -2,16 +2,26 @@
 
 import { useState, useEffect } from 'react'
 import { useLanguage } from '../../contexts/LanguageContext'
+import useAsyncLanguageGeneration from '../hooks/useAsyncLanguageGeneration'
 import DebateCard from './DebateCard'
 import VotingCard from './VotingCard'
 import TopicSubmissionCard from './TopicSubmissionCard'
 import FinalResultsCard from './FinalResultsCard'
 import BottomNavBar from './BottomNavBar'
 import DebateOverview from './DebateOverview'
+import AsyncGenerationNotifications from './AsyncGenerationNotifications'
 import styles from './SwipeDebateContainer.module.css'
 
 export default function SwipeDebateContainer() {
   const { language } = useLanguage()
+  const {
+    generateLanguage,
+    needsLanguageGeneration,
+    getGenerationStatus,
+    isGenerating,
+    notifications,
+    removeNotification
+  } = useAsyncLanguageGeneration()
   const [debates, setDebates] = useState([])
   const [currentDebateIndex, setCurrentDebateIndex] = useState(0)
   const [currentRound, setCurrentRound] = useState(1) // 1, 2, 3 for rounds, 4 for voting
@@ -24,6 +34,7 @@ export default function SwipeDebateContainer() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [isVoting, setIsVoting] = useState(false)
+  const [lastRefreshTime, setLastRefreshTime] = useState(null)
   
   // Round-by-round voting state
   const [roundWinners, setRoundWinners] = useState({
@@ -194,32 +205,54 @@ export default function SwipeDebateContainer() {
     }
   }
 
-  // Load debates from database on mount
-  useEffect(() => {
-    async function loadDebates() {
-      try {
-        setIsLoading(true)
-        setLoadError(null)
-        
-        const response = await fetch('/api/debates?limit=20')
-        if (!response.ok) {
-          throw new Error('Failed to load debates')
-        }
-        
-        const debatesData = await response.json()
-        setDebates(debatesData)
-        
-      } catch (error) {
-        console.error('Error loading debates:', error)
-        setLoadError('Failed to load debates. Please try again.')
-        setDebates([]) // Set empty array on error
-      } finally {
-        setIsLoading(false)
+  // Load debates function (can be called anywhere)
+  const loadDebates = async (forceRefresh = false) => {
+    // Smart caching: don't refetch if data is very fresh (within 30 seconds)
+    // unless explicitly forced
+    if (!forceRefresh && lastRefreshTime) {
+      const timeSinceLastRefresh = Date.now() - lastRefreshTime
+      if (timeSinceLastRefresh < 30000) {
+        return // Skip refresh if data is fresh
       }
     }
     
-    loadDebates()
-  }, [])
+    try {
+      setIsLoading(true)
+      setLoadError(null)
+      
+      const response = await fetch(`/api/debates?limit=20&language=${language}`)
+      if (!response.ok) {
+        throw new Error('Failed to load debates')
+      }
+      
+      const debatesData = await response.json()
+      setDebates(debatesData)
+      setLastRefreshTime(Date.now())
+      
+    } catch (error) {
+      console.error('Error loading debates:', error)
+      setLoadError('Failed to load debates. Please try again.')
+      setDebates([]) // Set empty array on error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Load debates from database on mount and when language changes
+  useEffect(() => {
+    loadDebates(true) // Force refresh on initial load and language change
+  }, [language])
+
+  // Trigger async generation when viewing a debate that needs target language content
+  useEffect(() => {
+    if (currentDebate && !showOverview && !showSubmissionForm && currentRound <= 3) {
+      // Check if current debate needs language generation
+      if (needsLanguageGeneration(currentDebate, language)) {
+        // Generate missing language content after a short delay
+        generateLanguage(currentDebate.id, language, 5000) // 5 second delay
+      }
+    }
+  }, [currentDebate, language, showOverview, showSubmissionForm, currentRound, needsLanguageGeneration, generateLanguage])
 
   // Load persistent votes from localStorage
   useEffect(() => {
@@ -256,7 +289,24 @@ export default function SwipeDebateContainer() {
       console.error('Error saving round votes:', error)
     }
   }, [roundVotes])
-  
+
+  // Auto-refresh debates when returning to overview
+  useEffect(() => {
+    if (showOverview) {
+      loadDebates() // Smart refresh when overview is shown
+    }
+  }, [showOverview])
+
+  // Auto-refresh debates when generation completes
+  useEffect(() => {
+    const completedGenerations = notifications.filter(n => n.type === 'success')
+    if (completedGenerations.length > 0) {
+      // Refresh debates after successful generation
+      setTimeout(() => {
+        loadDebates(true) // Force refresh to get updated content
+      }, 1000)
+    }
+  }, [notifications])
 
   const nextRound = () => {
     if (currentRound < 4 && !isTransitioning) {
@@ -423,8 +473,9 @@ export default function SwipeDebateContainer() {
       
       const newDebate = await response.json()
       
-      // Add to debates array and navigate to it
+      // Add to debates array and navigate to it (optimistic update)
       setDebates(prev => [...prev, newDebate])
+      setLastRefreshTime(Date.now()) // Update refresh timestamp for new data
       setCurrentDebateIndex(debates.length) // Navigate to new debate
       setCurrentRound(1)
       setShowSubmissionForm(false)
@@ -529,6 +580,12 @@ export default function SwipeDebateContainer() {
     <div 
       className={styles.container}
     >
+      {/* Async Generation Notifications */}
+      <AsyncGenerationNotifications 
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+
       {/* Fixed Topic Header */}
       <div className={styles.fixedHeader}>
         <div className={styles.fixedTopic}>

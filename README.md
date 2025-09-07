@@ -1,6 +1,6 @@
 # PickSides 🔥
 
-> TikTok-style debate app where AI argues both sides and you pick the winner
+> AI debate platform where historical figures argue both sides and you pick the winner
 
 **Version 0.0.5** - AI Persona Revolution! Historical figures debate modern topics with enhanced navigation and user experience.
 
@@ -41,11 +41,14 @@
 - **Authentic Responses**: AIs embody personality, communication style, and philosophical views
 - **Multi-Language Personas**: Romanian names where appropriate (Socrates → Socrate)
 
-### 🌐 Internationalization
-- **Language Toggle**: Switch between English and Romanian instantly  
-- **AI Language Consistency**: All models respond in selected language with persona authenticity
+### 🌐 Bilingual Cross-Language System
+- **Intelligent Language Switching**: Switch between English and Romanian instantly with smart fallbacks
+- **Asynchronous Generation**: Missing language content generated automatically in background
+- **Real-time Notifications**: Progress indicators when new language versions are being prepared
+- **Seamless UX**: Always see content immediately while enhanced versions load behind the scenes
+- **AI Language Consistency**: All models respond authentically in selected language with persona voices
 - **Complete Localization**: UI, prompts, personas, and error messages fully translated
-- **Persistent Language Settings**: Remembers your language preference
+- **Persistent Language Settings**: Remembers your language preference with localStorage sync
 
 ## 🚀 Quick Start
 
@@ -110,10 +113,11 @@
 ## 🛠 Technical Stack
 
 - **Frontend**: Next.js 14, React 18
-- **Database**: Supabase PostgreSQL with real-time subscriptions
+- **Database**: Supabase PostgreSQL with real-time subscriptions and bilingual schema
 - **Styling**: CSS Modules with modern glassmorphism design
 - **AI Integration**: OpenAI GPT-4o-mini, Anthropic Claude, Google Gemini with persona system
-- **Internationalization**: React Context with English/Romanian support
+- **Bilingual System**: Asynchronous cross-language generation with intelligent fallbacks
+- **Real-time Updates**: WebSocket-style notifications for background generation progress
 - **Navigation**: Button-based navigation with predictable controls
 - **Responsive**: Mobile-first with progressive enhancement
 
@@ -154,11 +158,13 @@ app/
 
 ### API Endpoints
 - `POST /api/debate` - Generate new debates with persona-influenced AI responses
-- `GET /api/debates` - Fetch saved debates from database with persona information
+- `GET /api/debates` - Fetch saved debates with intelligent language fallbacks
+- `GET /api/debates/[id]` - Fetch individual debates with bilingual support
+- `POST /api/debate/generate-language` - Asynchronous generation of missing language content
 - `DELETE /api/debates/[id]` - Delete individual debates and cleanup
 - `POST /api/vote` - Record user votes with debate tracking
 - Integrates with OpenAI, Anthropic, and Google AI models with persona system
-- Returns structured 3-round debate format with persona data and persistent storage
+- Returns structured 3-round debate format with bilingual support and persistent storage
 
 ## 🎯 Roadmap
 
@@ -184,8 +190,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with [Claude Code](https://claude.ai/code)
-- Powered by OpenAI GPT-4o-mini
-- Inspired by TikTok's intuitive navigation patterns
+- Powered by OpenAI GPT-4o-mini, Anthropic Claude, and Google Gemini
+- Enhanced with asynchronous bilingual generation system
 
 ---
 

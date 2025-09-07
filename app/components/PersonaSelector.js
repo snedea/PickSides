@@ -131,6 +131,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
         
         <div className={styles.buttonRow}>
           <button 
+            type="button"
             onClick={handleCustomSubmit}
             disabled={!inputValue.trim()}
             className={styles.confirmButton}
@@ -138,6 +139,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
             {t('ui.setPersona') || 'Set Persona'}
           </button>
           <button 
+            type="button"
             onClick={handleCancel}
             className={styles.cancelButton}
           >
@@ -151,6 +153,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
   return (
     <div className={styles.selector}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={styles.trigger}
       >
@@ -164,6 +167,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
           {defaultPersonas.map(persona => (
             <button
               key={persona.id}
+              type="button"
               onClick={() => handlePersonaSelect(persona)}
               className={styles.option}
             >
@@ -181,6 +185,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
               {customPersonas.map(persona => (
                 <div key={persona.id} className={styles.customOption}>
                   <button
+                    type="button"
                     onClick={() => handlePersonaSelect(persona)}
                     className={styles.option}
                   >
@@ -188,6 +193,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
                     <span className={styles.name}>{persona.name}</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDeleteCustomPersona(persona.id)}
                     className={styles.deleteButton}
                     title={t('ui.deletePersona') || 'Delete persona'}
@@ -202,6 +208,7 @@ export default function PersonaSelector({ side, currentPersona, onSelect }) {
           {/* Custom option */}
           <div className={styles.divider}></div>
           <button
+            type="button"
             onClick={() => handlePersonaSelect({ id: 'custom' })}
             className={styles.option}
           >

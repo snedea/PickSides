@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { saveDebate } from '../../lib/supabase.js'
+import { getDebateById } from '../../../lib/supabase.js'
+import { createClient } from '@supabase/supabase-js'
 
 const MODEL_CONFIG = {
   'gpt-4-turbo': {
@@ -22,121 +23,168 @@ const MODEL_CONFIG = {
   }
 }
 
-const DEFAULT_MODEL = 'gpt-4-turbo'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function POST(request) {
   try {
-    const { topic, proModel = DEFAULT_MODEL, conModel = DEFAULT_MODEL, proPersona = null, conPersona = null, language = 'en' } = await request.json()
+    const { debateId, targetLanguage } = await request.json()
 
-    if (!topic || typeof topic !== 'string') {
+    if (!debateId || !targetLanguage) {
       return NextResponse.json(
-        { error: 'Topic is required and must be a string' },
+        { error: 'debateId and targetLanguage are required' },
         { status: 400 }
       )
     }
 
-    // Validate models
-    if (!MODEL_CONFIG[proModel] || !MODEL_CONFIG[conModel]) {
+    if (!['en', 'ro'].includes(targetLanguage)) {
       return NextResponse.json(
-        { error: 'Invalid model specified. Supported models: gpt-4-turbo, claude-3-sonnet, gemini-pro' },
+        { error: 'targetLanguage must be "en" or "ro"' },
         { status: 400 }
       )
     }
 
-    // Check API keys
-    const proModelConfig = MODEL_CONFIG[proModel]
-    const conModelConfig = MODEL_CONFIG[conModel]
-
-    if (!process.env[proModelConfig.apiKeyEnv]) {
+    // Get the debate data
+    const debate = await getDebateById(debateId)
+    if (!debate) {
       return NextResponse.json(
-        { error: `API key for ${proModel} is not configured` },
-        { status: 500 }
+        { error: 'Debate not found' },
+        { status: 404 }
       )
     }
 
-    if (!process.env[conModelConfig.apiKeyEnv]) {
+    // Check if target language already exists
+    const firstRound = debate.rounds['1']
+    if (firstRound?.pro?.[targetLanguage] && firstRound.pro[targetLanguage].trim()) {
       return NextResponse.json(
-        { error: `API key for ${conModel} is not configured` },
-        { status: 500 }
+        { message: 'Target language already exists', generated: false },
+        { status: 200 }
       )
     }
 
-    // Initialize clients
+    // Get source language content
+    const sourceLanguage = targetLanguage === 'en' ? 'ro' : 'en'
+    const hasSourceContent = firstRound?.pro?.[sourceLanguage] && firstRound.pro[sourceLanguage].trim()
+    
+    if (!hasSourceContent) {
+      return NextResponse.json(
+        { error: 'No source content found for generation' },
+        { status: 400 }
+      )
+    }
+
+    // Get the topic in target language or fallback
+    const topic = debate[`topic_${targetLanguage}`] || debate[`topic_${sourceLanguage}`] || 'Unknown Topic'
+
+    // Initialize AI clients
     const clients = {
       openai: process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null,
       anthropic: process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null,
       google: process.env.GOOGLE_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_API_KEY) : null
     }
 
-    // Generate content in the user's requested language first (for fast response)
-    const opening = await generateDebateRound(clients, proModel, conModel, topic, 'opening', null, language, proPersona, conPersona)
-    const counter = await generateDebateRound(clients, proModel, conModel, topic, 'counter', opening, language, proPersona, conPersona)
-    const closing = await generateDebateRound(clients, proModel, conModel, topic, 'closing', { opening, counter }, language, proPersona, conPersona)
+    // Generate content for each round
+    const generatedRounds = {}
 
-    // Create bilingual structure with primary language populated and placeholder for other language
-    const otherLanguage = language === 'en' ? 'ro' : 'en'
-    const roundsObj = {
-      "1": {
-        pro: { [language]: opening.pro, [otherLanguage]: '' },
-        con: { [language]: opening.con, [otherLanguage]: '' },
-        proTldr: { [language]: opening.proTldr, [otherLanguage]: '' },
-        conTldr: { [language]: opening.conTldr, [otherLanguage]: '' }
-      },
-      "2": {
-        pro: { [language]: counter.pro, [otherLanguage]: '' },
-        con: { [language]: counter.con, [otherLanguage]: '' },
-        proTldr: { [language]: counter.proTldr, [otherLanguage]: '' },
-        conTldr: { [language]: counter.conTldr, [otherLanguage]: '' }
-      },
-      "3": {
-        pro: { [language]: closing.pro, [otherLanguage]: '' },
-        con: { [language]: closing.con, [otherLanguage]: '' },
-        proTldr: { [language]: closing.proTldr, [otherLanguage]: '' },
-        conTldr: { [language]: closing.conTldr, [otherLanguage]: '' }
+    for (let roundNum = 1; roundNum <= 3; roundNum++) {
+      const roundKey = roundNum.toString()
+      const roundData = debate.rounds[roundKey]
+      
+      if (!roundData) continue
+
+      // Get source content for this round
+      const sourceProContent = roundData.pro?.[sourceLanguage]
+      const sourceConContent = roundData.con?.[sourceLanguage]
+      const sourceProTldr = roundData.proTldr?.[sourceLanguage]
+      const sourceConTldr = roundData.conTldr?.[sourceLanguage]
+
+      if (!sourceProContent || !sourceConContent) continue
+
+      // Determine round type based on round number and target language
+      let roundType
+      if (roundNum === 1) {
+        roundType = targetLanguage === 'ro' ? 'Deschidere' : 'Opening'
+      } else if (roundNum === 2) {
+        roundType = targetLanguage === 'ro' ? 'Contraargument' : 'Counter'
+      } else {
+        roundType = targetLanguage === 'ro' ? 'Închidere' : 'Closing'
+      }
+
+      // Generate new content for target language
+      const generatedRound = await generateDebateRound(
+        clients, 
+        debate.pro_model, 
+        debate.con_model, 
+        topic, 
+        roundType.toLowerCase().replace('contraargument', 'counter').replace('închidere', 'closing').replace('deschidere', 'opening'), 
+        roundNum > 1 ? generatedRounds[`${roundNum - 1}`] : null,
+        targetLanguage,
+        debate.pro_persona,
+        debate.con_persona
+      )
+
+      generatedRounds[roundKey] = {
+        pro: { 
+          ...roundData.pro,
+          [targetLanguage]: generatedRound.pro 
+        },
+        con: { 
+          ...roundData.con,
+          [targetLanguage]: generatedRound.con 
+        },
+        proTldr: { 
+          ...roundData.proTldr,
+          [targetLanguage]: generatedRound.proTldr 
+        },
+        conTldr: { 
+          ...roundData.conTldr,
+          [targetLanguage]: generatedRound.conTldr 
+        }
       }
     }
 
-    // Save debate to database with topic in the requested language
-    const savedDebate = await saveDebate({
-      topic_en: language === 'en' ? topic : '',
-      topic_ro: language === 'ro' ? topic : '',
-      pro_model: proModel,
-      con_model: conModel,
-      pro_persona: proPersona,
-      con_persona: conPersona,
-      rounds: roundsObj
+    // Update database with generated content
+    const updatedRounds = { ...debate.rounds }
+    Object.keys(generatedRounds).forEach(roundKey => {
+      updatedRounds[roundKey] = generatedRounds[roundKey]
     })
 
-    // Return debate in the format expected by frontend
-    const currentLanguageRounds = [
-      { round: 1, type: language === 'ro' ? 'Deschidere' : 'Opening', pro: opening.pro, con: opening.con, proTldr: opening.proTldr, conTldr: opening.conTldr },
-      { round: 2, type: language === 'ro' ? 'Contraargument' : 'Counter', pro: counter.pro, con: counter.con, proTldr: counter.proTldr, conTldr: counter.conTldr },
-      { round: 3, type: language === 'ro' ? 'Închidere' : 'Closing', pro: closing.pro, con: closing.con, proTldr: closing.proTldr, conTldr: closing.conTldr }
-    ]
+    // Also update the topic in target language if missing
+    const updateData = { rounds: updatedRounds }
+    if (!debate[`topic_${targetLanguage}`]) {
+      updateData[`topic_${targetLanguage}`] = topic
+    }
 
-    // TODO: Asynchronously generate the other language version in the background
-    // This can be implemented later as a separate endpoint or background job
+    const { error: updateError } = await supabase
+      .from('debates')
+      .update(updateData)
+      .eq('id', debateId)
+
+    if (updateError) {
+      throw updateError
+    }
 
     return NextResponse.json({
-      ...savedDebate,
-      topic: language === 'ro' ? savedDebate.topic_ro : savedDebate.topic_en,
-      rounds: currentLanguageRounds,
-      generatedAt: savedDebate.created_at
+      message: `Generated ${targetLanguage} content successfully`,
+      generated: true,
+      language: targetLanguage,
+      debateId
     })
 
   } catch (error) {
-    console.error('Debate generation error:', error)
+    console.error('Language generation error:', error)
     return NextResponse.json(
-      { error: 'Failed to generate debate' },
+      { error: 'Failed to generate language content', details: error.message },
       { status: 500 }
     )
   }
 }
 
+// Helper functions (copied from debate/route.js but with modifications)
 async function generateCompletion(client, model, prompt, language = 'en') {
   const modelConfig = MODEL_CONFIG[model]
   
-  // System messages for Romanian language enforcement
   const systemMessage = language === 'ro' 
     ? 'You are a debate participant. You must respond ONLY in Romanian (limba română). Never use English or any other language, regardless of what language appears in the user message or context.'
     : 'You are a debate participant. Provide clear, factual arguments.'
@@ -183,7 +231,6 @@ async function generateCompletion(client, model, prompt, language = 'en') {
 async function generateTldrCompletion(client, model, prompt, language = 'en') {
   const modelConfig = MODEL_CONFIG[model]
   
-  // System messages for Romanian language enforcement
   const systemMessage = language === 'ro' 
     ? 'You must respond ONLY in Romanian (limba română). Provide a very short summary in Romanian.'
     : 'Provide a short, clear summary.'
@@ -228,16 +275,14 @@ async function generateTldrCompletion(client, model, prompt, language = 'en') {
 }
 
 async function generateDebateRound(clients, proModel, conModel, topic, roundType, previousRounds, language = 'en', proPersona = null, conPersona = null) {
-  // Language-specific instructions
   const languageInstruction = language === 'ro' 
     ? 'IMPORTANT: You must respond ONLY in Romanian (limba română). Ignore any English text in the context and respond entirely in Romanian.\n\n' 
     : ''
   const languageReminder = language === 'ro'
     ? '\n\nREMEMBER: Your entire response must be in Romanian, regardless of the language used in quoted text.'
     : ''
-  const wordLimit = language === 'ro' ? '75 de cuvinte sau mai puține' : '75 words or less'
+  const wordLimit = language === 'ro' ? '75 de cuvinte sau mai puțin' : '75 words or less'
 
-  // Persona-specific instructions
   const proPersonaInstruction = proPersona && proPersona !== 'Default AI' && proPersona !== 'IA Implicită' 
     ? `You are ${proPersona}. Embody their personality, communication style, philosophical views, temperament, and mannerisms. Use their typical vocabulary and argument style. If they have famous quotes or positions, reference them naturally when relevant. ` 
     : ''
@@ -261,21 +306,22 @@ async function generateDebateRound(clients, proModel, conModel, topic, roundType
     
     case 'counter':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Adversarul a spus: "${previousRounds.con}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
-        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Adversarul a spus: "${previousRounds.pro}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Adversarul a spus: "${previousRounds?.con || ''}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Adversarul a spus: "${previousRounds?.pro || ''}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
       } else {
-        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". The opposing side said: "${previousRounds.con}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
-        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". The opposing side said: "${previousRounds.pro}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". The opposing side said: "${previousRounds?.con || ''}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". The opposing side said: "${previousRounds?.pro || ''}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
       }
       break
     
     case 'closing':
+      const prevRounds = previousRounds || {}
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
-        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Bazat pe istoricul dezbaterii anterior. Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Bazat pe istoricul dezbaterii anterior. Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
       } else {
-        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
-        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". Based on the previous debate rounds. Write a powerful closing statement in exactly ${wordLimit}.`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". Based on the previous debate rounds. Write a powerful closing statement in exactly ${wordLimit}.`
       }
       break
   }
@@ -285,7 +331,6 @@ async function generateDebateRound(clients, proModel, conModel, topic, roundType
     generateCompletion(clients, conModel, conPrompt, language)
   ])
 
-  // Generate TL;DR summaries
   const tldrWordLimit = language === 'ro' ? '8 cuvinte sau mai puțin' : '8 words or less'
   const proTldrPrompt = language === 'ro' 
     ? `${languageInstruction}Rezumă acest argument Pro în ${tldrWordLimit}, captând punctul cheie: "${proArgument}"`
