@@ -85,6 +85,25 @@ This document chronicles the development of PickSides, a TikTok-style debate app
 - **Cross-Language Context Protection**: Enhanced prompts prevent language contamination
 - **Persistent Vote Management**: Comprehensive localStorage integration with database sync
 
+### Phase 9.2: AI Persona System (v0.0.5 - Persona Revolution)
+- **Historical Figure Debates**: 7 default personas (Socrates, Einstein, Ayn Rand, Shakespeare, Nietzsche, Tzara, Default AI)
+- **Custom Persona Management**: Users can add any historical figure, philosopher, or personality
+- **Persistent Persona Library**: Save custom personas with localStorage and delete functionality
+- **Authentic AI Responses**: AIs embody personality, communication style, and philosophical views
+- **Multi-Language Persona Support**: Romanian names where appropriate (Socrates → Socrate)
+- **Enhanced Display**: Clear "CHATGPT AS SOCRATES" vs "CLAUDE AS AYN RAND" labeling throughout app
+- **Database Integration**: Persona fields added to database schema with proper migration
+- **Dropdown Component**: PersonaSelector with glassmorphism styling and mobile optimization
+
+### Phase 9.3: Navigation Simplification (v0.0.5 - Button-Only UX)
+- **Removed Confusing Swipe Gestures**: Eliminated all touch event handlers and swipe detection
+- **Button-Only Navigation**: Clear, predictable navigation through visible controls
+- **Enhanced Visual Feedback**: Prominent down arrows, navigation dots, and bottom bar controls  
+- **Simplified User Experience**: No hidden gestures - all actions discoverable through UI
+- **Preserved Core Functionality**: Maintained round progression, debate switching via buttons
+- **Mobile Optimization**: Large touch targets optimized for thumb navigation
+- **Accessibility Enhancement**: Screen reader friendly with clear button labels
+
 ## 🏗 Architecture Decisions
 
 ### Component Structure
@@ -110,24 +129,25 @@ SwipeDebateContainer (Main Logic)
 
 ### Navigation System
 ```javascript
-// 2D Navigation Matrix
+// Button-Only Navigation (v0.0.5+)
 const navigation = {
-  vertical: {   // Up/Down swipes
+  vertical: {   // Down arrow button clicks
     rounds: [1, 2, 3, 4], // 4 = voting screen
     infinite: false
   },
-  horizontal: { // Left/Right swipes  
-    debates: [0, 1, 2, 3, 4], // 5 total debates
-    infinite: true // 4 → 0, 0 → 4
+  horizontal: { // Left/Right navigation via overview  
+    debates: [0, 1, 2, 3, 4], // Navigate via home screen
+    infinite: true // Access all debates from overview grid
   }
 }
 ```
 
-### Touch/Gesture Handling
-- **Custom Implementation**: No external gesture library
-- **Multi-directional**: Distinguishes horizontal vs vertical swipes
-- **Context-aware**: Different behaviors per screen (rounds vs voting)
-- **Minimum Distance**: 50px threshold prevents accidental triggers
+### Button-Based Interaction (v0.0.5+)
+- **Visible Controls Only**: All navigation through discoverable UI elements
+- **Navigation Dots**: Click to jump to specific rounds (1, 2, 3, voting)
+- **Down Arrow**: Advance through rounds with visual feedback
+- **Bottom Navigation**: Home, language toggle, add debate, page indicators
+- **Accessibility First**: Screen reader friendly with proper ARIA labels
 
 ## 🎨 Design Philosophy
 
@@ -199,20 +219,19 @@ const openai = new OpenAI({
 
 ## 📱 Mobile UX Patterns
 
-### Gesture Vocabulary
+### Button Navigation (v0.0.5+)
 ```
-Vertical Navigation (Rounds):
-↑ Swipe Up: Next round (1→2→3→Vote)
-↓ Swipe Down: Previous round (Vote→3→2→1)
+Round Navigation:
+🔽 Down Arrow: Next round (1→2→3→Vote)
+● Navigation Dots: Jump to specific round (1, 2, 3, Vote)
 
-Horizontal Navigation (Debates):  
-← Swipe Left: Next debate (1/5→2/5→...→5/5→1/5)
-→ Swipe Right: Previous debate (5/5→4/5→...→1/5→5/5)
+Debate Navigation:  
+🏠 Home Button: Return to debate overview grid
+📄 Page Numbers: Current position indicator in bottom bar
 
-Voting Gestures:
-↑ Swipe Up: Vote Pro
-↓ Swipe Down: Vote Con  
-←→ Swipe Left/Right: Vote Tie
+Persona Selection:
+▼ Persona Dropdown: Choose from default or custom personas
+💾 Save/Delete: Manage custom persona library
 ```
 
 ### Visual Feedback System
@@ -250,6 +269,18 @@ Voting Gestures:
 ### 7. Topic Prominence
 **Problem**: Debate questions were too subtle for such an important element
 **Solution**: Enhanced typography with larger text, better weight, and text shadows
+
+### 8. AI Persona System (v0.0.5)
+**Problem**: Generic AI responses lacked personality and engagement
+**Solution**: Implemented persona system with historical figures, custom management, and authentic character responses
+
+### 9. Confusing Swipe Navigation (v0.0.5)
+**Problem**: Users found hidden swipe gestures difficult to discover and unreliable
+**Solution**: Removed all swipe detection, replaced with clear button-only navigation with visual feedback
+
+### 10. Database Persona Integration (v0.0.5)
+**Problem**: Persona data wasn't persisted or displayed consistently across app
+**Solution**: Added persona fields to database schema, updated all API endpoints, and enhanced display formatting
 
 ## 📊 Performance Metrics
 
@@ -307,6 +338,9 @@ Voting Gestures:
 - **Animation performance**: CSS transforms > JavaScript animations
 - **State management**: Simple solutions often beat complex ones
 - **User testing**: Real device testing reveals issues simulators miss
+- **Persona engagement**: Character-driven AI responses dramatically improve user connection
+- **Navigation clarity**: Hidden gestures confuse users - visible controls always win
+- **Database evolution**: Schema changes need careful migration and API consistency
 
 ### Claude Code Benefits
 - **Rapid iteration**: Quick implementation of complex features

@@ -288,29 +288,29 @@
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  opacity: 0.9;
+  opacity: 1;
 }
 
-/* Model-specific colors */
+/* Model-specific colors - all white for maximum readability */
 .proModel {
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
 }
 
 .conModel {
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
 }
 
-/* Individual model colors for better distinction */
+/* Individual model colors - all white for better readability */
 .chatgpt {
-  color: #10a37f !important;
+  color: #ffffff !important;
 }
 
 .claude {
-  color: #d97706 !important;
+  color: #ffffff !important;
 }
 
 .gemini {
-  color: #4285f4 !important;
+  color: #ffffff !important;
 }
 
 /* Mobile adjustments for model names */

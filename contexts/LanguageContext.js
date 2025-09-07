@@ -56,7 +56,16 @@ const translations = {
       deleteConfirmation: "Are you sure you want to delete this debate?",
       deleteWarning: "This will permanently remove the debate and all your votes.",
       delete: "Delete",
-      keepDebate: "Keep Debate"
+      keepDebate: "Keep Debate",
+      // Persona functionality
+      defaultAI: "Default AI",
+      setPersona: "Set Persona",
+      savePersona: "Save this persona for future use",
+      deletePersona: "Delete persona",
+      custom: "Custom...",
+      enterPersona: "Enter any person (e.g., 'Shakespeare', 'Elon Musk')",
+      choosePersonas: "Choose Personas",
+      asPersona: "as"
     },
     // Round Types
     rounds: {
@@ -125,7 +134,16 @@ const translations = {
       deleteConfirmation: "Ești sigur că vrei să ștergi această dezbatere?",
       deleteWarning: "Aceasta va elimina permanent dezbaterea și toate voturile tale.",
       delete: "Șterge",
-      keepDebate: "Păstrează Dezbaterea"
+      keepDebate: "Păstrează Dezbaterea",
+      // Persona functionality
+      defaultAI: "IA Implicită",
+      setPersona: "Setează Persona",
+      savePersona: "Salvează această personă pentru folosire viitoare",
+      deletePersona: "Șterge persona",
+      custom: "Personalizat...",
+      enterPersona: "Introdu orice persoană (ex., 'Shakespeare', 'Elon Musk')",
+      choosePersonas: "Alege Personele",
+      asPersona: "ca"
     },
     // Round Types
     rounds: {

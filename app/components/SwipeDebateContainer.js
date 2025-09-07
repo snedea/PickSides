@@ -32,11 +32,6 @@ export default function SwipeDebateContainer() {
     round3: null
   })
   
-  // Touch handling state
-  const [touchStart, setTouchStart] = useState(null)
-  const [touchEnd, setTouchEnd] = useState(null)
-
-  const minSwipeDistance = 50
   const currentDebate = debates[currentDebateIndex]
 
   // Calculate current score from round winners
@@ -262,106 +257,6 @@ export default function SwipeDebateContainer() {
     }
   }, [roundVotes])
   
-  const handleTouchStart = (e) => {
-    setTouchEnd(null)
-    setTouchStart({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY
-    })
-  }
-
-  const handleTouchMove = (e) => {
-    setTouchEnd({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY
-    })
-  }
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
-    
-    const distanceX = touchStart.x - touchEnd.x
-    const distanceY = touchStart.y - touchEnd.y
-    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY)
-    
-    if (Math.abs(distanceX) < minSwipeDistance && Math.abs(distanceY) < minSwipeDistance) return
-
-    if (isHorizontalSwipe) {
-      // Horizontal swipe - change debates
-      if (currentRound === 4) {
-        // On voting screen - register as tie if no vote, then navigate
-        if (!votes[currentDebate.id]) {
-          // Trigger TIE button flash animation
-          if (typeof window !== 'undefined' && window.triggerTieFlash) {
-            window.triggerTieFlash()
-          }
-          
-          // Wait for flash animation, then register vote and auto-advance
-          setTimeout(async () => {
-            await handleVote('tie')
-            
-            // Navigation will be handled by handleVote function
-            // But for horizontal gesture, we need to handle direction
-            if (distanceX > 0) {
-              // Swipe left - next debate (handleVote already calls nextDebate)
-            } else {
-              // Swipe right - previous debate
-              setTimeout(() => previousDebate(), 500)
-            }
-          }, 150)
-        } else {
-          // Already voted, navigate immediately
-          if (distanceX > 0) {
-            nextDebate()
-          } else {
-            previousDebate()
-          }
-        }
-      } else {
-        // On rounds 1-3, horizontal swipe navigates debates
-        if (distanceX > 0) {
-          // Swipe left - next debate
-          nextDebate()
-        } else {
-          // Swipe right - previous debate
-          previousDebate()
-        }
-      }
-    } else {
-      // Vertical swipe
-      if (currentRound === 4) {
-        // On voting screen - up=Pro, down=Con
-        if (!votes[currentDebate.id]) {
-          if (distanceY > 0) {
-            // Swipe up - vote Pro
-            if (typeof window !== 'undefined' && window.triggerProFlash) {
-              window.triggerProFlash()
-            }
-            setTimeout(async () => {
-              await handleVote('pro')
-            }, 150)
-          } else {
-            // Swipe down - vote Con
-            if (typeof window !== 'undefined' && window.triggerConFlash) {
-              window.triggerConFlash()
-            }
-            setTimeout(async () => {
-              await handleVote('con')
-            }, 150)
-          }
-        }
-      } else {
-        // Change rounds (not on voting screen)
-        if (distanceY > 0) {
-          // Swipe up - next round
-          nextRound()
-        } else {
-          // Swipe down - previous round
-          previousRound()
-        }
-      }
-    }
-  }
 
   const nextRound = () => {
     if (currentRound < 4 && !isTransitioning) {
@@ -510,7 +405,7 @@ export default function SwipeDebateContainer() {
   }
 
 
-  const handleTopicSubmit = async ({ topic, proModel, conModel }) => {
+  const handleTopicSubmit = async ({ topic, proModel, conModel, proPersona, conPersona }) => {
     setIsGeneratingDebate(true)
     
     try {
@@ -519,7 +414,7 @@ export default function SwipeDebateContainer() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic, proModel, conModel, language })
+        body: JSON.stringify({ topic, proModel, conModel, proPersona, conPersona, language })
       })
       
       if (!response.ok) {
@@ -633,9 +528,6 @@ export default function SwipeDebateContainer() {
   return (
     <div 
       className={styles.container}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
       {/* Fixed Topic Header */}
       <div className={styles.fixedHeader}>

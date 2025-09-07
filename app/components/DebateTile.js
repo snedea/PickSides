@@ -12,6 +12,14 @@ const getModelDisplayName = (modelId) => {
   return modelNames[modelId] || 'AI'
 }
 
+const formatModelPersonaDisplay = (modelId, persona) => {
+  const modelName = getModelDisplayName(modelId);
+  if (persona && persona !== 'Default AI' && persona !== 'IA Implicită' && persona.trim() !== '') {
+    return `${persona} (${modelName})`;
+  }
+  return modelName;
+}
+
 export default function DebateTile({ 
   debate, 
   roundVotes = {}, 
@@ -124,7 +132,7 @@ export default function DebateTile({
       {/* Models display */}
       <div className={styles.modelsDisplay}>
         <span className={styles.modelName}>
-          {getModelDisplayName(debate.pro_model)} vs {getModelDisplayName(debate.con_model)}
+          {formatModelPersonaDisplay(debate.pro_model, debate.pro_persona)} vs {formatModelPersonaDisplay(debate.con_model, debate.con_persona)}
         </span>
       </div>
     </div>

@@ -22,10 +22,20 @@ const getModelClass = (modelId) => {
   return modelClasses[modelId] || 'default';
 };
 
+const formatModelPersonaDisplay = (modelId, persona, t) => {
+  const modelName = getModelDisplayName(modelId);
+  
+  if (persona && persona !== 'Default AI' && persona !== 'IA Implicită' && persona.trim() !== '') {
+    return `${modelName} ${t('ui.asPersona')} ${persona}`.toUpperCase();
+  }
+  return modelName.toUpperCase();
+};
+
 export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roundWinners }) {
   const [enlargedSide, setEnlargedSide] = useState(null)
   const [showVoteAnimation, setShowVoteAnimation] = useState(false)
   const { t } = useLanguage()
+
 
   // Get the single round data (SwipeDebateContainer passes filtered data)
   const currentRound = debate.rounds[0]
@@ -191,7 +201,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
               >
                 <div className={`${styles.sideHeader} ${styles.proHeader}`}>
                   <div className={`${styles.modelName} ${styles.proModel} ${styles[getModelClass(debate.pro_model)]}`}>
-                    {getModelDisplayName(debate.pro_model)}
+                    {formatModelPersonaDisplay(debate.pro_model, debate.pro_persona, t)}
                   </div>
                   <h3>{t('ui.pro')}</h3>
                 </div>
@@ -223,7 +233,7 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
               >
                 <div className={`${styles.sideHeader} ${styles.conHeader}`}>
                   <div className={`${styles.modelName} ${styles.conModel} ${styles[getModelClass(debate.con_model)]}`}>
-                    {getModelDisplayName(debate.con_model)}
+                    {formatModelPersonaDisplay(debate.con_model, debate.con_persona, t)}
                   </div>
                   <h3>{t('ui.con')}</h3>
                 </div>

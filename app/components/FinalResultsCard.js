@@ -22,6 +22,14 @@ const getModelClass = (modelId) => {
   return modelClasses[modelId] || 'default';
 };
 
+const formatModelPersonaDisplay = (modelId, persona, t) => {
+  const modelName = getModelDisplayName(modelId);
+  if (persona && persona !== 'Default AI' && persona !== 'IA Implicită' && persona.trim() !== '') {
+    return `${persona} (${modelName})`;
+  }
+  return modelName;
+};
+
 export default function FinalResultsCard({ 
   roundWinners, 
   proModel, 
@@ -43,8 +51,8 @@ export default function FinalResultsCard({
       else if (winner === 'con') score.con++
     })
     
-    const proModelName = getModelDisplayName(proModel)
-    const conModelName = getModelDisplayName(conModel)
+    const proModelName = formatModelPersonaDisplay(proModel, debate.pro_persona, t)
+    const conModelName = formatModelPersonaDisplay(conModel, debate.con_persona, t)
     
     if (score.pro > score.con) {
       return { 
@@ -71,8 +79,10 @@ export default function FinalResultsCard({
   }
 
   const result = calculateWinner()
-  const proModelName = getModelDisplayName(proModel)
-  const conModelName = getModelDisplayName(conModel)
+  
+  
+  const proModelName = formatModelPersonaDisplay(proModel, debate.pro_persona, t)
+  const conModelName = formatModelPersonaDisplay(conModel, debate.con_persona, t)
 
   const getRoundLabel = (round, winner) => {
     if (!winner) return t('ui.loading') // Using loading as placeholder for "not voted"
