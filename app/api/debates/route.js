@@ -14,6 +14,8 @@ export async function GET(request) {
       topic: debate.topic,
       pro_model: debate.pro_model,
       con_model: debate.con_model,
+      pro_persona: debate.pro_persona,
+      con_persona: debate.con_persona,
       pro_votes: debate.pro_votes,
       con_votes: debate.con_votes,
       tie_votes: debate.tie_votes,

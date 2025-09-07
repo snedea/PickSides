@@ -2,16 +2,17 @@
 
 > TikTok-style debate app where AI argues both sides and you pick the winner
 
-**Version 0.0.4** - Complete Internationalization & Management! Multi-language support, debate overview home screen, and enhanced AI consistency.
+**Version 0.0.5** - AI Persona Revolution! Historical figures debate modern topics with enhanced navigation and user experience.
 
 ## ✨ Features
 
 ### 🎯 Core Experience
-- **TikTok-Style Navigation**: Swipe up/down through debate rounds, left/right between debates
-- **Multi-AI Debates**: OpenAI, Anthropic Claude, and Google Gemini create balanced arguments
-- **3-Round Structure**: Opening statements, rebuttals, and closing arguments
-- **TL;DR Summaries**: Quick overview of each side's key points
-- **Multi-Language Support**: Full English/Romanian localization with proper AI responses
+- **AI Persona System**: Historical figures like Socrates, Einstein, and Ayn Rand debate modern topics
+- **Multi-AI Debates**: OpenAI, Anthropic Claude, and Google Gemini embody different personalities
+- **Button Navigation**: Clean, predictable navigation through visible controls (no confusing swipes)
+- **3-Round Structure**: Opening statements, rebuttals, and closing arguments with persona-influenced responses
+- **TL;DR Summaries**: Quick overview of each side's key points in character
+- **Multi-Language Support**: Full English/Romanian localization with culturally appropriate personas
 
 ### ❤️ Heart-Button Voting System
 - **Explicit Heart Voting**: Clear ♡ and ❤️ buttons for intentional voting
@@ -23,17 +24,27 @@
 
 ### 🎨 Design & UX  
 - **Dark Glassmorphism UI**: Modern, sleek interface with blur effects
-- **Debate Overview Home Screen**: Grid-based layout with visual progress indicators
-- **Prominent Topic Header**: Large, readable debate questions with subtle shadows
+- **AI Persona Display**: Clear "CHATGPT AS SOCRATES" vs "CLAUDE AS AYN RAND" labeling
+- **Debate Overview Home Screen**: Grid-based layout with persona matchup previews
+- **Prominent Topic Header**: Large, readable debate questions with subtle shadows  
 - **Bottom Navigation Bar**: Emoji-based navigation with language toggle and home button
 - **Heart-Button Interface**: Intuitive ♡/❤️ voting with edit capability
+- **Button-Only Navigation**: No confusing swipes - all actions through visible controls
 - **Debate Management**: Delete debates with confirmation dialogs
 - **Mobile-First**: Responsive design optimized for touch
 
+### 🎭 AI Persona System
+- **7 Default Personas**: Socrates, Einstein, Ayn Rand, Shakespeare, Nietzsche, Tzara, plus Default AI
+- **Custom Personas**: Add any historical figure, philosopher, or personality
+- **Persistent Library**: Save custom personas for future debates
+- **Persona Management**: Delete saved personas with confirmation
+- **Authentic Responses**: AIs embody personality, communication style, and philosophical views
+- **Multi-Language Personas**: Romanian names where appropriate (Socrates → Socrate)
+
 ### 🌐 Internationalization
-- **Language Toggle**: Switch between English and Romanian instantly
-- **AI Language Consistency**: All models respond in selected language
-- **Complete Localization**: UI, prompts, and error messages fully translated
+- **Language Toggle**: Switch between English and Romanian instantly  
+- **AI Language Consistency**: All models respond in selected language with persona authenticity
+- **Complete Localization**: UI, prompts, personas, and error messages fully translated
 - **Persistent Language Settings**: Remembers your language preference
 
 ## 🚀 Quick Start
@@ -76,10 +87,10 @@
 ## 🎮 How to Use
 
 ### Navigation
-- **Vertical Swipes**: Navigate between rounds (1 → 2 → 3 → Voting)
-- **Horizontal Swipes**: Navigate between debates (1/5 ↔ 2/5 ↔ ... ↔ 5/5)
-- **Click Navigation**: Use bottom dots to jump to specific rounds
+- **Bottom Dots**: Click to jump to specific rounds (1 → 2 → 3 → Voting)
 - **Down Arrow**: Click to advance through rounds
+- **Home Button**: 🏠 Navigate to debate overview grid
+- **Bottom Navigation**: Language toggle 🇬🇧/🇷🇴, page numbers 📄, add debates ➕
 
 ### Voting & Interaction
 - **Heart-Button Voting**: Tap ♡ to vote, tap ❤️ to unvote or change vote
@@ -101,19 +112,19 @@
 - **Frontend**: Next.js 14, React 18
 - **Database**: Supabase PostgreSQL with real-time subscriptions
 - **Styling**: CSS Modules with modern glassmorphism design
-- **AI Integration**: OpenAI GPT-4o-mini, Anthropic Claude, Google Gemini
+- **AI Integration**: OpenAI GPT-4o-mini, Anthropic Claude, Google Gemini with persona system
 - **Internationalization**: React Context with English/Romanian support
-- **Navigation**: Custom touch/swipe handling
+- **Navigation**: Button-based navigation with predictable controls
 - **Responsive**: Mobile-first with progressive enhancement
 
 ## 📱 Mobile Experience
 
 PickSides is designed mobile-first with:
-- Large, accessible touch targets
-- Smooth gesture recognition
-- Optimized typography for small screens
+- Large, accessible touch targets for buttons and hearts
+- Button-based navigation (no confusing gestures)
+- Optimized typography for small screens with bright white persona names
 - Minimal cognitive load with clear visual hierarchy
-- One-handed operation support
+- One-handed operation support with bottom navigation
 
 ## 🔧 Development
 
@@ -133,20 +144,21 @@ app/
 ```
 
 ### Key Components
-- **SwipeDebateContainer**: Handles all navigation, gestures, and state
-- **DebateCard**: Displays Pro/Con arguments with TL;DR summaries  
-- **DebateOverview**: Grid-based home screen with visual progress indicators
-- **DebateTile**: Individual debate cards with status and delete functionality
-- **LanguageContext**: Manages internationalization and translations
+- **SwipeDebateContainer**: Handles all navigation, button controls, and state
+- **DebateCard**: Displays Pro/Con arguments with persona names and TL;DR summaries
+- **PersonaSelector**: Dropdown for choosing AI personas with custom management  
+- **DebateOverview**: Grid-based home screen with persona matchup previews
+- **DebateTile**: Individual debate cards with persona vs persona display
+- **LanguageContext**: Manages internationalization, translations, and persona names
 - **BottomNavBar**: Emoji-based navigation with language toggle
 
 ### API Endpoints
-- `POST /api/debate` - Generate new debates from topics with language support
-- `GET /api/debates` - Fetch saved debates from database
-- `DELETE /api/debates/[id]` - Delete individual debates
-- `POST /api/vote` - Record user votes
-- Integrates with OpenAI, Anthropic, and Google AI models
-- Returns structured 3-round debate format with persistent storage
+- `POST /api/debate` - Generate new debates with persona-influenced AI responses
+- `GET /api/debates` - Fetch saved debates from database with persona information
+- `DELETE /api/debates/[id]` - Delete individual debates and cleanup
+- `POST /api/vote` - Record user votes with debate tracking
+- Integrates with OpenAI, Anthropic, and Google AI models with persona system
+- Returns structured 3-round debate format with persona data and persistent storage
 
 ## 🎯 Roadmap
 
@@ -177,4 +189,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Ready to pick sides?** 🔥 Start swiping and let the debates begin!
+**Ready to pick sides?** 🔥 Choose your personas and let the debates begin!

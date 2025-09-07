@@ -1,0 +1,246 @@
+.selector {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.trigger:hover {
+  background: rgba(31, 41, 55, 0.8);
+  border-color: rgba(75, 85, 99, 0.5);
+}
+
+.currentPersona {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arrow {
+  color: rgba(156, 163, 175, 0.7);
+  transition: transform 0.2s ease;
+  font-size: 12px;
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+  min-width: 200px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.option:hover {
+  background: rgba(55, 65, 81, 0.5);
+}
+
+.option:first-child {
+  border-radius: 12px 12px 0 0;
+}
+
+.option:last-child {
+  border-radius: 0 0 12px 12px;
+}
+
+.customOption {
+  display: flex;
+  align-items: center;
+}
+
+.customOption .option {
+  flex: 1;
+  padding-right: 8px;
+}
+
+.deleteButton {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.name {
+  flex: 1;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(75, 85, 99, 0.3);
+  margin: 4px 0;
+}
+
+/* Custom input styles */
+.customInput {
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+}
+
+.input {
+  width: 100%;
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  color: white;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.input::placeholder {
+  color: rgba(156, 163, 175, 0.7);
+}
+
+.input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.checkboxRow {
+  margin-bottom: 12px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(156, 163, 175, 0.9);
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #10b981;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmButton {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  flex: 1;
+  background: rgba(75, 85, 99, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  color: rgba(156, 163, 175, 0.9);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: rgba(75, 85, 99, 0.7);
+  border-color: rgba(75, 85, 99, 0.5);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .dropdown {
+    min-width: 180px;
+    max-height: 250px;
+  }
+  
+  .customInput {
+    min-width: 240px;
+  }
+  
+  .option {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}

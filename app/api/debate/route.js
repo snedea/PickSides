@@ -26,7 +26,7 @@ const DEFAULT_MODEL = 'gpt-4-turbo'
 
 export async function POST(request) {
   try {
-    const { topic, proModel = DEFAULT_MODEL, conModel = DEFAULT_MODEL, language = 'en' } = await request.json()
+    const { topic, proModel = DEFAULT_MODEL, conModel = DEFAULT_MODEL, proPersona = null, conPersona = null, language = 'en' } = await request.json()
 
     if (!topic || typeof topic !== 'string') {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(request) {
     const debateRounds = []
 
     // Round 1: Opening statements
-    const opening = await generateDebateRound(clients, proModel, conModel, topic, 'opening', null, language)
+    const opening = await generateDebateRound(clients, proModel, conModel, topic, 'opening', null, language, proPersona, conPersona)
     debateRounds.push({
       round: 1,
       type: language === 'ro' ? 'Deschidere' : 'Opening',
@@ -82,7 +82,7 @@ export async function POST(request) {
     })
 
     // Round 2: Counter arguments
-    const counter = await generateDebateRound(clients, proModel, conModel, topic, 'counter', opening, language)
+    const counter = await generateDebateRound(clients, proModel, conModel, topic, 'counter', opening, language, proPersona, conPersona)
     debateRounds.push({
       round: 2,
       type: language === 'ro' ? 'Contraargument' : 'Counter',
@@ -93,7 +93,7 @@ export async function POST(request) {
     })
 
     // Round 3: Closing statements
-    const closing = await generateDebateRound(clients, proModel, conModel, topic, 'closing', { opening, counter }, language)
+    const closing = await generateDebateRound(clients, proModel, conModel, topic, 'closing', { opening, counter }, language, proPersona, conPersona)
     debateRounds.push({
       round: 3,
       type: language === 'ro' ? 'Închidere' : 'Closing',
@@ -119,6 +119,8 @@ export async function POST(request) {
       topic,
       pro_model: proModel,
       con_model: conModel,
+      pro_persona: proPersona,
+      con_persona: conPersona,
       rounds: roundsObj
     })
 
@@ -232,7 +234,7 @@ async function generateTldrCompletion(client, model, prompt, language = 'en') {
   throw new Error(`Unsupported model provider: ${modelConfig.provider}`)
 }
 
-async function generateDebateRound(clients, proModel, conModel, topic, roundType, previousRounds, language = 'en') {
+async function generateDebateRound(clients, proModel, conModel, topic, roundType, previousRounds, language = 'en', proPersona = null, conPersona = null) {
   // Language-specific instructions
   const languageInstruction = language === 'ro' 
     ? 'IMPORTANT: You must respond ONLY in Romanian (limba română). Ignore any English text in the context and respond entirely in Romanian.\n\n' 
@@ -242,37 +244,45 @@ async function generateDebateRound(clients, proModel, conModel, topic, roundType
     : ''
   const wordLimit = language === 'ro' ? '75 de cuvinte sau mai puține' : '75 words or less'
 
+  // Persona-specific instructions
+  const proPersonaInstruction = proPersona && proPersona !== 'Default AI' && proPersona !== 'IA Implicită' 
+    ? `You are ${proPersona}. Embody their personality, communication style, philosophical views, temperament, and mannerisms. Use their typical vocabulary and argument style. If they have famous quotes or positions, reference them naturally when relevant. ` 
+    : ''
+  const conPersonaInstruction = conPersona && conPersona !== 'Default AI' && conPersona !== 'IA Implicită' 
+    ? `You are ${conPersona}. Embody their personality, communication style, philosophical views, temperament, and mannerisms. Use their typical vocabulary and argument style. If they have famous quotes or positions, reference them naturally when relevant. ` 
+    : ''
+
   let proPrompt = ''
   let conPrompt = ''
 
   switch (roundType) {
     case 'opening':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}Argumentezi PENTRU poziția: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}`
-        conPrompt = `${languageInstruction}Argumentezi ÎMPOTRIVA poziției: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU poziția: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA poziției: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}`
       } else {
-        proPrompt = `You are arguing FOR the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.`
-        conPrompt = `You are arguing AGAINST the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.`
       }
       break
     
     case 'counter':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}Argumentezi PENTRU: "${topic}". Adversarul a spus: "${previousRounds.con}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
-        conPrompt = `${languageInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Adversarul a spus: "${previousRounds.pro}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Adversarul a spus: "${previousRounds.con}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Adversarul a spus: "${previousRounds.pro}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
       } else {
-        proPrompt = `You are arguing FOR: "${topic}". The opposing side said: "${previousRounds.con}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
-        conPrompt = `You are arguing AGAINST: "${topic}". The opposing side said: "${previousRounds.pro}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". The opposing side said: "${previousRounds.con}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". The opposing side said: "${previousRounds.pro}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
       }
       break
     
     case 'closing':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}Argumentezi PENTRU: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
-        conPrompt = `${languageInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
       } else {
-        proPrompt = `You are arguing FOR: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
-        conPrompt = `You are arguing AGAINST: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
       }
       break
   }
