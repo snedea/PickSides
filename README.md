@@ -3,19 +3,22 @@
 > **TikTok-style AI debate app with intelligent persona system and bilingual support**
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.6-green.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.0.7-green.svg" alt="Version">
   <img src="https://img.shields.io/badge/Next.js-14-blue.svg" alt="Next.js">
   <img src="https://img.shields.io/badge/AI-OpenAI%20%7C%20Claude%20%7C%20Gemini-purple.svg" alt="AI Models">
   <img src="https://img.shields.io/badge/languages-English%20%7C%20Romanian-orange.svg" alt="Languages">
+  <img src="https://img.shields.io/badge/database-PostgreSQL%20%7C%20Supabase-red.svg" alt="Database">
 </p>
 
 PickSides is a modern debate application that generates AI-powered debates between different personas on any topic. Experience engaging 3-round debates with historical figures, philosophers, or custom personalities in a TikTok-inspired interface.
 
 ## ✨ Features
 
-### 🤖 **AI Persona System**
+### 🤖 **Database-Powered AI Persona System**
 - **7 Default Personas**: Socrates, Einstein, Ayn Rand, Shakespeare, Nietzsche, Tzara, and Default AI
-- **Custom Personas**: Add any historical figure, philosopher, or personality
+- **Community-Contributed Personas**: Add any historical figure with just their name
+- **AI Research Pipeline**: Claude researches biographical data, GPT-4 creates personality profiles
+- **Persistent Storage**: PostgreSQL database with deduplication and quality assessment
 - **Authentic Responses**: AIs embody personality, communication style, and philosophical views
 - **Multi-Model Support**: OpenAI GPT-4, Anthropic Claude, and Google Gemini
 
@@ -52,17 +55,28 @@ PickSides is a modern debate application that generates AI-powered debates betwe
    npm install
    ```
 
-3. **Environment Configuration**
+3. **Database Setup (Supabase)**
+   - Create a [Supabase](https://supabase.com) project
+   - Run the migration to create the persona system tables:
+   ```bash
+   # Using Supabase CLI
+   npx supabase db push
+   
+   # Or manually run the SQL migration in your Supabase dashboard:
+   # supabase/migrations/20241208000000_add_crowdsourced_personas.sql
+   ```
+
+4. **Environment Configuration**
    Create `.env.local` file:
    ```env
    OPENAI_API_KEY=your_openai_key
    ANTHROPIC_API_KEY=your_claude_key
    GOOGLE_API_KEY=your_gemini_key
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_key
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-4. **Start development server**
+5. **Start development server**
    ```bash
    npm run dev
    ```
