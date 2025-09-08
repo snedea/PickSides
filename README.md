@@ -46,7 +46,7 @@ PickSides is a modern debate application that generates AI-powered debates betwe
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/snedea/picksides.git
    cd picksides
    ```
 
@@ -122,15 +122,42 @@ PickSides/
 │   ├── components/
 │   │   ├── SwipeDebateContainer.js    # Main debate logic
 │   │   ├── DebateCard.js              # Individual debate rounds
+│   │   ├── DebateOverview.js          # Home screen grid
+│   │   ├── DebateTile.js              # Debate grid items
 │   │   ├── BottomNavBar.js            # Navigation controls
 │   │   ├── PersonaSelector.js         # Persona management
-│   │   └── DebateOverview.js          # Home screen grid
+│   │   ├── TopicSubmissionCard.js     # New debate creation
+│   │   ├── FinalResultsCard.js        # Voting results display
+│   │   ├── LanguageToggle.js          # Language switching
+│   │   ├── AsyncGenerationNotifications.js  # Background generation alerts
+│   │   └── VotingCard.js              # Individual voting interface
 │   ├── api/
 │   │   ├── debates/                   # Debate CRUD operations
-│   │   └── debate/
-│   │       └── generate-language/     # Bilingual generation
+│   │   │   └── [id]/                  # Individual debate management
+│   │   ├── personas/                  # Persona management API
+│   │   │   ├── submit/                # Create new personas
+│   │   │   └── test/                  # Testing endpoints
+│   │   ├── admin/                     # Database admin tools
+│   │   │   ├── migrate/               # Database migration
+│   │   │   └── setup-table/           # Schema setup
+│   │   ├── debate/
+│   │   │   └── generate-language/     # Bilingual generation
+│   │   └── vote/                      # Voting operations
+│   ├── lib/
+│   │   ├── crowdsourcedPersonas.js    # Database persona operations
+│   │   ├── personaResearch.js         # AI biographical research
+│   │   ├── personaEnrichment.js       # GPT-4 profile generation
+│   │   ├── emotionalStates.js         # Persona emotional profiles
+│   │   └── supabase.js                # Database connection
+│   ├── data/
+│   │   └── sampleDebates.js           # Sample debate data
+│   ├── hooks/
+│   │   └── useAsyncLanguageGeneration.js  # Bilingual content hooks
 │   └── contexts/
 │       └── LanguageContext.js         # Language state management
+├── supabase/
+│   └── migrations/
+│       └── 20241208000000_add_crowdsourced_personas.sql  # Database schema
 ├── ecosystem.config.js                # PM2 configuration
 └── CLAUDE.md                         # Development documentation
 ```
@@ -140,8 +167,14 @@ PickSides/
 ### Creating Debates
 1. Click the **➕** button in the bottom navigation
 2. Enter your debate topic
-3. Select personas for Pro and Con sides
+3. Select personas for Pro and Con sides (choose from defaults or create new ones)
 4. Wait for AI generation (3-5 seconds)
+
+### Creating Historical Figure Personas
+1. In persona selection, choose **"Add Historical Figure"**
+2. Simply enter the person's name (e.g., "Winston Churchill", "Marie Curie")
+3. AI automatically researches their biography and creates a complete profile
+4. Persona is permanently saved and available for all future debates
 
 ### Navigation
 - **🏠 Home**: Return to debate overview grid
@@ -180,23 +213,32 @@ module.exports = {
 ### Database Schema
 - **debates**: Topic, personas, rounds content, metadata
 - **votes**: User voting decisions per round and overall
+- **crowdsourced_personas**: Community-contributed historical figures with AI-generated profiles
+  - Full biographical data (name, era, occupation, birth/death years)
+  - JSONB personality traits, linguistic profiles, and debate styles
+  - Quality scoring, usage tracking, and community feedback
 - **Bilingual structure**: Nested language objects for all content
 
-## 🚀 Recent Updates (v0.0.6)
+## 🚀 Recent Updates (v0.0.7)
 
-### Navigation Enhancement
-- **Home Button Prominence**: Moved to center with green styling for better user flow
-- **Improved Button Layout**: Optimized bottom navigation for one-handed operation
+### 🗄️ Database-Powered Persona System
+- **Complete PostgreSQL Integration**: Migrated from temporary workarounds to full database persistence
+- **AI Research Pipeline**: Claude researches biographical data from just a name input
+- **Streamlined Creation**: Users enter only the historical figure's name (e.g., "Einstein")
+- **Quality Assessment**: AI-driven scoring with automatic approval for high-quality personas
+- **Duplicate Prevention**: PostgreSQL functions with fuzzy matching prevent duplicates
+- **Persistent Storage**: Full persona profiles with JSONB personality traits and debate styles
 
-### Translation Improvements  
-- **Better Duplicate Prevention**: Enhanced queue management prevents redundant generation requests
-- **Error Recovery**: Graceful handling of translation failures with smart fallbacks
-- **Performance Optimization**: Reduced initial API calls from 12 to 3
+### 🔧 Technical Implementation
+- **Database Migration**: Complete `crowdsourced_personas` table with indexes and stored procedures
+- **API Endpoints**: New `/api/personas/` endpoints for creation, retrieval, and management
+- **Error Handling**: Comprehensive validation and graceful error recovery
+- **Production Ready**: Removed all workarounds, full database functionality restored
 
-### Development Infrastructure
-- **PM2 Support**: Production-ready process management with logging and auto-restart
-- **Hot Reload Stability**: Enhanced dev/production mode switching
-- **Build Optimization**: Better CSS module handling and development server reliability
+### 🧠 AI Integration
+- **Research Phase**: Claude automatically researches historical figures from name alone
+- **Enrichment Phase**: GPT-4 creates detailed personality profiles and debate characteristics
+- **Storage Phase**: Complete persona data stored with usage tracking and community features
 
 ## 🤝 Contributing
 
