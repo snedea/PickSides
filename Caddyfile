@@ -1,0 +1,16 @@
+picksides.app {
+    bind 0.0.0.0 100.120.166.71
+    
+    # Use self-signed certificate for private network
+    tls internal
+    
+    reverse_proxy localhost:3002
+    encode gzip
+    
+    header {
+        X-Frame-Options DENY
+        X-Content-Type-Options nosniff
+        X-XSS-Protection "1; mode=block"
+        -Server
+    }
+}
