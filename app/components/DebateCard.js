@@ -106,7 +106,11 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
         <div className={styles.enlargedHeader}>
           <div className={styles.enlargedModelInfo}>
             <h3 className={styles.enlargedModelName}>
-              {getModelDisplayName(sideData.model)}
+              {formatModelPersonaDisplay(
+                sideData.model, 
+                enlargedSide === 'pro' ? debate.pro_persona : debate.con_persona, 
+                t
+              )}
             </h3>
             <span className={`${styles.enlargedStance} ${enlargedSide === 'pro' ? styles.proStance : styles.conStance}`}>
               {enlargedSide === 'pro' ? t('ui.pro') : t('ui.con')} - {t('ui.round')} {roundNumber}
@@ -150,29 +154,6 @@ export default function DebateCard({ debate, onVote, onUnvote, roundNumber, roun
   // SPLIT VIEW
   return (
     <div className={styles.debateContainer}>
-      {/* Round indicator with vote history */}
-      <div className={styles.progressHeader}>
-        <span className={styles.roundLabel}>{t('ui.round')} {roundNumber} {t('ui.roundOf')} 3</span>
-        <div className={styles.progressDots}>
-          {[1, 2, 3].map(num => {
-            const vote = roundWinners[`round${num}`]
-            return (
-              <div 
-                key={num}
-                className={`${styles.progressDot} ${
-                  vote === 'pro' 
-                    ? styles.proDot
-                    : vote === 'con'
-                      ? styles.conDot
-                      : num === roundNumber 
-                        ? styles.currentDot
-                        : styles.emptyDot
-                }`}
-              />
-            )
-          })}
-        </div>
-      </div>
 
       <div className={styles.roundsContainer}>
         <div className={styles.round}>

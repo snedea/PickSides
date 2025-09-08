@@ -3,6 +3,13 @@ import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { saveDebate } from '../../lib/supabase.js'
+import { 
+  initializeEmotionalStates, 
+  updateEmotionalState, 
+  applyEmotionalState,
+  EMOTIONAL_STATES 
+} from '../../lib/emotionalStates.js'
+import { incrementPersonaUsage } from '../../lib/crowdsourcedPersonas.js'
 
 const MODEL_CONFIG = {
   'gpt-4-turbo': {
@@ -68,10 +75,23 @@ export async function POST(request) {
       google: process.env.GOOGLE_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_API_KEY) : null
     }
 
+    // Track usage of crowdsourced personas
+    if (proPersona && proPersona !== 'Default AI' && proPersona !== 'IA Implicită') {
+      await incrementPersonaUsage(proPersona).catch(err => 
+        console.log('Failed to increment pro persona usage:', err))
+    }
+    if (conPersona && conPersona !== 'Default AI' && conPersona !== 'IA Implicită') {
+      await incrementPersonaUsage(conPersona).catch(err => 
+        console.log('Failed to increment con persona usage:', err))
+    }
+    
+    // Initialize emotional state tracking for this debate
+    const emotionalStates = initializeEmotionalStates(proPersona, conPersona)
+    
     // Generate content in the user's requested language first (for fast response)
-    const opening = await generateDebateRound(clients, proModel, conModel, topic, 'opening', null, language, proPersona, conPersona)
-    const counter = await generateDebateRound(clients, proModel, conModel, topic, 'counter', opening, language, proPersona, conPersona)
-    const closing = await generateDebateRound(clients, proModel, conModel, topic, 'closing', { opening, counter }, language, proPersona, conPersona)
+    const opening = await generateDebateRound(clients, proModel, conModel, topic, 'opening', null, language, proPersona, conPersona, emotionalStates, 1)
+    const counter = await generateDebateRound(clients, proModel, conModel, topic, 'counter', opening, language, proPersona, conPersona, emotionalStates, 2)
+    const closing = await generateDebateRound(clients, proModel, conModel, topic, 'closing', { opening, counter }, language, proPersona, conPersona, emotionalStates, 3)
 
     // Create bilingual structure with primary language populated and placeholder for other language
     const otherLanguage = language === 'en' ? 'ro' : 'en'
@@ -133,7 +153,7 @@ export async function POST(request) {
   }
 }
 
-async function generateCompletion(client, model, prompt, language = 'en') {
+async function generateCompletion(client, model, prompt, language = 'en', temperature = 0.8) {
   const modelConfig = MODEL_CONFIG[model]
   
   // System messages for Romanian language enforcement
@@ -153,14 +173,14 @@ async function generateCompletion(client, model, prompt, language = 'en') {
       model: modelConfig.model,
       messages: messages,
       max_tokens: 150,
-      temperature: 0.8,
+      temperature: temperature,
     })
     return response.choices[0].message.content.trim()
   } else if (modelConfig.provider === 'anthropic') {
     const response = await client.anthropic.messages.create({
       model: modelConfig.model,
       max_tokens: 150,
-      temperature: 0.8,
+      temperature: temperature,
       system: language === 'ro' ? systemMessage : undefined,
       messages: [{ role: "user", content: prompt }]
     })
@@ -171,7 +191,7 @@ async function generateCompletion(client, model, prompt, language = 'en') {
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         maxOutputTokens: 150,
-        temperature: 0.8
+        temperature: temperature
       }
     })
     return result.response.text().trim()
@@ -180,7 +200,7 @@ async function generateCompletion(client, model, prompt, language = 'en') {
   throw new Error(`Unsupported model provider: ${modelConfig.provider}`)
 }
 
-async function generateTldrCompletion(client, model, prompt, language = 'en') {
+async function generateTldrCompletion(client, model, prompt, language = 'en', temperature = 0.7) {
   const modelConfig = MODEL_CONFIG[model]
   
   // System messages for Romanian language enforcement
@@ -200,14 +220,14 @@ async function generateTldrCompletion(client, model, prompt, language = 'en') {
       model: modelConfig.model,
       messages: messages,
       max_tokens: 50,
-      temperature: 0.7,
+      temperature: temperature,
     })
     return response.choices[0].message.content.trim().replace(/^"|"$/g, '')
   } else if (modelConfig.provider === 'anthropic') {
     const response = await client.anthropic.messages.create({
       model: modelConfig.model,
       max_tokens: 50,
-      temperature: 0.7,
+      temperature: temperature,
       system: language === 'ro' ? systemMessage : undefined,
       messages: [{ role: "user", content: prompt }]
     })
@@ -218,7 +238,7 @@ async function generateTldrCompletion(client, model, prompt, language = 'en') {
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         maxOutputTokens: 50,
-        temperature: 0.7
+        temperature: temperature
       }
     })
     return result.response.text().trim().replace(/^"|"$/g, '')
@@ -227,7 +247,7 @@ async function generateTldrCompletion(client, model, prompt, language = 'en') {
   throw new Error(`Unsupported model provider: ${modelConfig.provider}`)
 }
 
-async function generateDebateRound(clients, proModel, conModel, topic, roundType, previousRounds, language = 'en', proPersona = null, conPersona = null) {
+async function generateDebateRound(clients, proModel, conModel, topic, roundType, previousRounds, language = 'en', proPersona = null, conPersona = null, emotionalStates = null, round = 1) {
   // Language-specific instructions
   const languageInstruction = language === 'ro' 
     ? 'IMPORTANT: You must respond ONLY in Romanian (limba română). Ignore any English text in the context and respond entirely in Romanian.\n\n' 
@@ -245,44 +265,82 @@ async function generateDebateRound(clients, proModel, conModel, topic, roundType
     ? `You are ${conPersona}. Embody their personality, communication style, philosophical views, temperament, and mannerisms. Use their typical vocabulary and argument style. If they have famous quotes or positions, reference them naturally when relevant. ` 
     : ''
 
+  // Emotional state management
+  let proEmotionalContext = { enhancedPrompt: '', temperature: 0.8, debugInfo: {} }
+  let conEmotionalContext = { enhancedPrompt: '', temperature: 0.8, debugInfo: {} }
+  let stateUpdateResults = { pro: null, con: null }
+
+  if (emotionalStates && round > 1 && previousRounds) {
+    // Update emotional states based on opponent arguments from previous round
+    if (roundType === 'counter' && previousRounds.con) {
+      stateUpdateResults.pro = updateEmotionalState(emotionalStates, 'pro', previousRounds.con, round)
+    }
+    if (roundType === 'counter' && previousRounds.pro) {
+      stateUpdateResults.con = updateEmotionalState(emotionalStates, 'con', previousRounds.pro, round)
+    }
+    if (roundType === 'closing' && previousRounds.counter) {
+      stateUpdateResults.pro = updateEmotionalState(emotionalStates, 'pro', previousRounds.counter.con, round)
+      stateUpdateResults.con = updateEmotionalState(emotionalStates, 'con', previousRounds.counter.pro, round)
+    }
+
+    // Apply emotional states to prompts
+    const proState = emotionalStates.get('pro')?.currentState || EMOTIONAL_STATES.NEUTRAL
+    const conState = emotionalStates.get('con')?.currentState || EMOTIONAL_STATES.NEUTRAL
+    
+    proEmotionalContext = applyEmotionalState('', proState, proPersona, round, language)
+    conEmotionalContext = applyEmotionalState('', conState, conPersona, round, language)
+
+    // Log emotional state changes for debugging
+    console.log(`🎭 EMOTIONAL STATE DEBUG - Round ${round} (${roundType}):`)
+    if (stateUpdateResults.pro) {
+      console.log(`   Pro (${proPersona}): ${stateUpdateResults.pro.previousState} → ${stateUpdateResults.pro.newState}`)
+      console.log(`   Pro Analysis: ${stateUpdateResults.pro.analysis.reasoning}`)
+    }
+    if (stateUpdateResults.con) {
+      console.log(`   Con (${conPersona}): ${stateUpdateResults.con.previousState} → ${stateUpdateResults.con.newState}`)  
+      console.log(`   Con Analysis: ${stateUpdateResults.con.analysis.reasoning}`)
+    }
+    console.log(`   Pro Temperature: ${proEmotionalContext.temperature}, Con Temperature: ${conEmotionalContext.temperature}`)
+  }
+
   let proPrompt = ''
   let conPrompt = ''
 
   switch (roundType) {
     case 'opening':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU poziția: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}`
-        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA poziției: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU poziția: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}${proEmotionalContext.enhancedPrompt}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA poziției: "${topic}". Scrie o declarație de deschidere convingătoare în exact ${wordLimit}. Fii persuasiv, factual și clar.${languageReminder}${conEmotionalContext.enhancedPrompt}`
       } else {
-        proPrompt = `${proPersonaInstruction}You are arguing FOR the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.`
-        conPrompt = `${conPersonaInstruction}You are arguing AGAINST the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.${proEmotionalContext.enhancedPrompt}`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST the position: "${topic}". Write a compelling opening statement in exactly ${wordLimit}. Be persuasive, factual, and clear.${conEmotionalContext.enhancedPrompt}`
       }
       break
     
     case 'counter':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Adversarul a spus: "${previousRounds.con}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
-        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Adversarul a spus: "${previousRounds.pro}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Adversarul a spus: "${previousRounds.con}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}${proEmotionalContext.enhancedPrompt}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Adversarul a spus: "${previousRounds.pro}". Scrie un contraargument în exact ${wordLimit} care să răspundă punctelor lor și să-ți întărească poziția.${languageReminder}${conEmotionalContext.enhancedPrompt}`
       } else {
-        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". The opposing side said: "${previousRounds.con}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
-        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". The opposing side said: "${previousRounds.pro}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". The opposing side said: "${previousRounds.con}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.${proEmotionalContext.enhancedPrompt}`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". The opposing side said: "${previousRounds.pro}". Write a counter-argument in exactly ${wordLimit} that addresses their points while strengthening your position.${conEmotionalContext.enhancedPrompt}`
       }
       break
     
     case 'closing':
       if (language === 'ro') {
-        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
-        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}`
+        proPrompt = `${languageInstruction}${proPersonaInstruction}Argumentezi PENTRU: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}${proEmotionalContext.enhancedPrompt}`
+        conPrompt = `${languageInstruction}${conPersonaInstruction}Argumentezi ÎMPOTRIVA: "${topic}". Bazat pe istoricul dezbaterii: Deschidere Pro: "${previousRounds.opening.pro}", Deschidere Con: "${previousRounds.opening.con}", Contraargument Pro: "${previousRounds.counter.pro}", Contraargument Con: "${previousRounds.counter.con}". Scrie o declarație finală puternică în exact ${wordLimit}.${languageReminder}${conEmotionalContext.enhancedPrompt}`
       } else {
-        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
-        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.`
+        proPrompt = `${proPersonaInstruction}You are arguing FOR: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.${proEmotionalContext.enhancedPrompt}`
+        conPrompt = `${conPersonaInstruction}You are arguing AGAINST: "${topic}". Based on this debate history: Opening Pro: "${previousRounds.opening.pro}", Opening Con: "${previousRounds.opening.con}", Counter Pro: "${previousRounds.counter.pro}", Counter Con: "${previousRounds.counter.con}". Write a powerful closing statement in exactly ${wordLimit}.${conEmotionalContext.enhancedPrompt}`
       }
       break
   }
 
   const [proArgument, conArgument] = await Promise.all([
-    generateCompletion(clients, proModel, proPrompt, language),
-    generateCompletion(clients, conModel, conPrompt, language)
+    generateCompletion(clients, proModel, proPrompt, language, proEmotionalContext.temperature),
+    generateCompletion(clients, conModel, conPrompt, language, conEmotionalContext.temperature)
   ])
 
   // Generate TL;DR summaries
@@ -295,14 +353,34 @@ async function generateDebateRound(clients, proModel, conModel, topic, roundType
     : `Summarize this Con argument in ${tldrWordLimit}, capturing the key point: "${conArgument}"`
 
   const [proTldr, conTldr] = await Promise.all([
-    generateTldrCompletion(clients, proModel, proTldrPrompt, language),
-    generateTldrCompletion(clients, conModel, conTldrPrompt, language)
+    generateTldrCompletion(clients, proModel, proTldrPrompt, language, proEmotionalContext.temperature * 0.9),
+    generateTldrCompletion(clients, conModel, conTldrPrompt, language, conEmotionalContext.temperature * 0.9)
   ])
 
   return {
     pro: proArgument,
     con: conArgument,
     proTldr,
-    conTldr
+    conTldr,
+    // Debug information for emotional states (not sent to frontend)
+    _debug: {
+      round,
+      roundType,
+      emotionalStates: emotionalStates ? {
+        pro: {
+          persona: proPersona,
+          state: emotionalStates.get('pro')?.currentState || 'neutral',
+          temperature: proEmotionalContext.temperature,
+          stateHistory: emotionalStates.get('pro')?.stateHistory || []
+        },
+        con: {
+          persona: conPersona,
+          state: emotionalStates.get('con')?.currentState || 'neutral', 
+          temperature: conEmotionalContext.temperature,
+          stateHistory: emotionalStates.get('con')?.stateHistory || []
+        }
+      } : null,
+      stateUpdates: stateUpdateResults
+    }
   }
 }

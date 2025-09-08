@@ -2,7 +2,7 @@
   width: 100%;
   height: 100%;
   background: transparent;
-  padding: 20px;
+  padding: 8px 20px;
   padding-bottom: 120px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
@@ -203,7 +203,7 @@
 /* Mobile optimizations - keep side by side */
 @media (max-width: 768px) {
   .debateContainer {
-    padding: 12px;
+    padding: 4px 12px;
   }
 
   .debateTopic {
@@ -248,7 +248,7 @@
 /* Very small screens */
 @media (max-width: 480px) {
   .debateContainer {
-    padding: 8px;
+    padding: 2px 8px;
   }
 
   .debateTopic {
@@ -328,55 +328,6 @@
   }
 }
 
-/* Progress indicator styles */
-.progressHeader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px 8px;
-  background: transparent;
-}
-
-.roundLabel {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.progressDots {
-  display: flex;
-  gap: 8px;
-}
-
-.progressDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.proDot {
-  background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
-}
-
-.conDot {
-  background: #ef4444;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-}
-
-.currentDot {
-  background: rgba(255, 255, 255, 0.5);
-  animation: pulse 2s infinite;
-}
-
-.emptyDot {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
 
 /* Tap hints */
 .tapHints {
@@ -508,12 +459,6 @@
   transform: scale(0.95);
 }
 
-/* Current round indicator ring */
-.currentDot {
-  background: rgba(255, 255, 255, 0.5);
-  animation: pulse 2s infinite;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
-}
 
 /* Enlarged view styles */
 .enlargedContainer {

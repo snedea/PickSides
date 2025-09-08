@@ -54,17 +54,36 @@ export async function POST(request) {
       )
     }
 
-    // Check if target language already exists
+    // Check if target language already exists for both rounds and topic
     const firstRound = debate.rounds['1']
-    if (firstRound?.pro?.[targetLanguage] && firstRound.pro[targetLanguage].trim()) {
+    const topicExists = debate[`topic_${targetLanguage}`] && debate[`topic_${targetLanguage}`].trim()
+    const roundsExist = firstRound?.pro?.[targetLanguage] && firstRound.pro[targetLanguage].trim()
+    
+    // Check for legacy bug where both topic_en and topic_ro have same content
+    const sourceLanguage = targetLanguage === 'en' ? 'ro' : 'en'
+    const sourceTopic = debate[`topic_${sourceLanguage}`] || debate.topic
+    const targetTopic = debate[`topic_${targetLanguage}`]
+    
+    // Special case: if targetTopic exists but is identical to sourceTopic, it's a legacy bug
+    // Also handle case where we have targetTopic but no sourceTopic (created in target language originally)
+    const topicsAreIdentical = (targetTopic && sourceTopic && targetTopic === sourceTopic) ||
+                             (targetTopic && !sourceTopic && targetLanguage !== 'en') // Romanian debate with no English topic
+    
+    
+    // For legacy debates, we might have rounds but no topic translation - allow generation in this case
+    // Also allow generation if topics are identical (legacy migration bug)
+    // Special case: if topic exists but needs translation (identical content or wrong language)
+    const needsTopicTranslation = !topicExists || topicsAreIdentical
+    
+    if (topicExists && roundsExist && !needsTopicTranslation) {
       return NextResponse.json(
         { message: 'Target language already exists', generated: false },
         { status: 200 }
       )
     }
+    
 
     // Get source language content
-    const sourceLanguage = targetLanguage === 'en' ? 'ro' : 'en'
     const hasSourceContent = firstRound?.pro?.[sourceLanguage] && firstRound.pro[sourceLanguage].trim()
     
     if (!hasSourceContent) {
@@ -74,8 +93,9 @@ export async function POST(request) {
       )
     }
 
-    // Get the topic in target language or fallback
-    const topic = debate[`topic_${targetLanguage}`] || debate[`topic_${sourceLanguage}`] || 'Unknown Topic'
+    // Get source topic and prepare for translation (using already defined sourceTopic variable)
+    let translatedTopic = debate[`topic_${targetLanguage}`]
+    
 
     // Initialize AI clients
     const clients = {
@@ -83,6 +103,25 @@ export async function POST(request) {
       anthropic: process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null,
       google: process.env.GOOGLE_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_API_KEY) : null
     }
+
+    // Generate topic translation if needed
+    // Force translation if topics are identical (legacy bug) or no proper translation exists
+    const shouldTranslateTopic = needsTopicTranslation && 
+                               ((sourceTopic && sourceTopic !== 'Unknown Topic') || 
+                                (targetTopic && targetTopic !== 'Unknown Topic'))
+    
+    if (shouldTranslateTopic) {
+      try {
+        const topicToTranslate = sourceTopic || targetTopic
+        translatedTopic = await generateTopicTranslation(clients.openai, topicToTranslate, targetLanguage)
+      } catch (error) {
+        console.error('Topic translation failed:', error)
+        translatedTopic = sourceTopic || targetTopic // Fallback to available topic
+      }
+    }
+
+    // Use translated topic or fallback
+    const topic = translatedTopic || sourceTopic
 
     // Generate content for each round
     const generatedRounds = {}
@@ -150,10 +189,10 @@ export async function POST(request) {
       updatedRounds[roundKey] = generatedRounds[roundKey]
     })
 
-    // Also update the topic in target language if missing
+    // Also update the topic in target language if translated
     const updateData = { rounds: updatedRounds }
-    if (!debate[`topic_${targetLanguage}`]) {
-      updateData[`topic_${targetLanguage}`] = topic
+    if (translatedTopic && translatedTopic !== sourceTopic) {
+      updateData[`topic_${targetLanguage}`] = translatedTopic
     }
 
     const { error: updateError } = await supabase
@@ -350,4 +389,33 @@ async function generateDebateRound(clients, proModel, conModel, topic, roundType
     proTldr,
     conTldr
   }
+}
+
+// Generate topic translation
+async function generateTopicTranslation(client, sourceTopic, targetLanguage) {
+  if (!client) {
+    throw new Error('OpenAI client not available for topic translation')
+  }
+
+  const translationPrompt = targetLanguage === 'ro' 
+    ? `Translate this debate topic to Romanian (limba română). Provide only the translated topic, nothing else: "${sourceTopic}"`
+    : `Translate this debate topic to English. Provide only the translated topic, nothing else: "${sourceTopic}"`
+
+  const systemMessage = targetLanguage === 'ro' 
+    ? 'You are a professional translator. You must respond ONLY in Romanian (limba română). Provide only the translation, nothing else.'
+    : 'You are a professional translator. Provide only the translation, nothing else.'
+
+  const messages = [
+    { role: "system", content: systemMessage },
+    { role: "user", content: translationPrompt }
+  ]
+
+  const response = await client.chat.completions.create({
+    model: 'gpt-4-turbo',
+    messages: messages,
+    max_tokens: 100,
+    temperature: 0.3, // Lower temperature for more consistent translations
+  })
+
+  return response.choices[0].message.content.trim().replace(/^"|"$/g, '')
 }

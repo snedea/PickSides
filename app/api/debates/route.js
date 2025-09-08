@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getRecentDebates } from '../../lib/supabase.js'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -13,17 +15,23 @@ export async function GET(request) {
     
     const transformedDebates = debates.map(debate => {
       // Handle both old format (single topic) and new format (topic_en/topic_ro)
-      // Intelligent topic fallback
+      // Intelligent topic fallback with debug logging
       const requestedTopic = language === 'ro' ? debate.topic_ro : debate.topic_en
       const alternativeTopic = language === 'ro' ? debate.topic_en : debate.topic_ro
       const legacyTopic = debate.topic
       
       const topicInLanguage = requestedTopic || alternativeTopic || legacyTopic || 'Topic unavailable'
       
+      // Track what language the topic is actually in (for translation detection)
+      const topicLanguage = requestedTopic ? language : 
+                           alternativeTopic ? (language === 'ro' ? 'en' : 'ro') : 
+                           'en' // Default to English for legacy topics
+      
+      
       // Handle both old rounds format and new bilingual format
       const rounds = Object.entries(debate.rounds).map(([roundNum, roundData]) => {
         const roundNumber = parseInt(roundNum)
-        let type, pro, con, proTldr, conTldr
+        let type, pro, con, proTldr, conTldr, contentLanguage
         
         // Check if this is the new bilingual format
         if (roundData.pro && typeof roundData.pro === 'object' && roundData.pro.en !== undefined) {
@@ -48,6 +56,7 @@ export async function GET(request) {
           
           if (hasRequestedContent) {
             // Use requested language
+            contentLanguage = language
             type = roundNumber === 1 ? (language === 'ro' ? 'Deschidere' : 'Opening') :
                    roundNumber === 2 ? (language === 'ro' ? 'Contraargument' : 'Counter') :
                    (language === 'ro' ? 'Închidere' : 'Closing')
@@ -58,6 +67,7 @@ export async function GET(request) {
           } else if (hasAlternativeContent) {
             // Fallback to alternative language
             const fallbackLang = language === 'en' ? 'ro' : 'en'
+            contentLanguage = fallbackLang // Track that we're using fallback content
             type = roundNumber === 1 ? (fallbackLang === 'ro' ? 'Deschidere' : 'Opening') :
                    roundNumber === 2 ? (fallbackLang === 'ro' ? 'Contraargument' : 'Counter') :
                    (fallbackLang === 'ro' ? 'Închidere' : 'Closing')
@@ -67,6 +77,7 @@ export async function GET(request) {
             conTldr = alternativeContent.conTldr
           } else {
             // No content available in either language
+            contentLanguage = 'none'
             type = roundNumber === 1 ? 'Opening' : roundNumber === 2 ? 'Counter' : 'Closing'
             pro = 'Content not available'
             con = 'Content not available'
@@ -75,6 +86,7 @@ export async function GET(request) {
           }
         } else {
           // Old single-language format
+          contentLanguage = 'en' // Default to English for old format debates
           type = roundNumber === 1 ? 'Opening' : roundNumber === 2 ? 'Counter' : 'Closing'
           pro = roundData.pro
           con = roundData.con
@@ -88,13 +100,15 @@ export async function GET(request) {
           pro,
           con,
           proTldr,
-          conTldr
+          conTldr,
+          contentLanguage: contentLanguage || 'en' // Add metadata for translation detection
         }
       }).sort((a, b) => a.round - b.round)
       
       return {
         id: debate.id,
         topic: topicInLanguage,
+        topicLanguage: topicLanguage, // Add topic language metadata
         pro_model: debate.pro_model,
         con_model: debate.con_model,
         pro_persona: debate.pro_persona,

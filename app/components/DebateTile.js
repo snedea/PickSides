@@ -27,7 +27,21 @@ export default function DebateTile({
   onClick,
   onDelete 
 }) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  
+  // Utility function to get topic in current language with fallbacks
+  const getTopicForLanguage = (debate) => {
+    if (!debate) return 'Loading...'
+    
+    if (language === 'en') {
+      return debate.topic_en || debate.topic_ro || debate.topic || 'Unknown Topic'
+    } else if (language === 'ro') {
+      return debate.topic_ro || debate.topic_en || debate.topic || 'Subiect necunoscut'
+    }
+    
+    // Fallback to any available topic
+    return debate.topic_en || debate.topic_ro || debate.topic || 'Unknown Topic'
+  }
   
   // Calculate completion status
   const roundVoteCount = Object.keys(roundVotes).length
@@ -71,10 +85,11 @@ export default function DebateTile({
     }
   }
   
-  // Truncate topic for display
-  const truncatedTopic = debate.topic?.length > 80 
-    ? `${debate.topic.substring(0, 77)}...`
-    : debate.topic || 'Unknown Topic'
+  // Get topic in current language and truncate for display
+  const currentTopic = getTopicForLanguage(debate)
+  const truncatedTopic = currentTopic.length > 80 
+    ? `${currentTopic.substring(0, 77)}...`
+    : currentTopic
     
   // Handle delete button click
   const handleDeleteClick = (e) => {

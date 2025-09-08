@@ -19,75 +19,93 @@ export function useAsyncLanguageGeneration() {
   const needsLanguageGeneration = (debate, requestedLanguage) => {
     if (!debate?.rounds) return false
     
-    // Get the first round - API returns rounds as an array, DB has object format
+    // Get the first round - API returns rounds as an array
     const firstRound = Array.isArray(debate.rounds) ? debate.rounds[0] : debate.rounds['1']
-    if (!firstRound) return false
+    if (!firstRound) return false // No rounds available
 
-    // Debug logging to understand the data structure
-    console.log('needsLanguageGeneration check:', {
-      debateId: debate.id,
-      requestedLanguage,
-      roundsType: Array.isArray(debate.rounds) ? 'array' : 'object',
-      firstRound: firstRound,
-      hasProContent: !!firstRound.pro,
-      proContentType: typeof firstRound.pro
-    })
-
-    // For API response format (rounds as array with string content)
+    // For API response format (rounds as array with language-specific content)
     if (Array.isArray(debate.rounds)) {
-      // If the current round has content in the requested language, no generation needed
-      // This checks if the content is showing in the requested language already
+      // Check if we have content
       const hasContent = firstRound.pro && firstRound.con && 
                         firstRound.pro.trim() !== '' && firstRound.con.trim() !== ''
+      const hasTopic = debate.topic && debate.topic.trim() !== ''
       
-      console.log('Array format check:', {
-        hasContent,
-        currentLanguage: 'displaying current language content'
-      })
+      // If we don't have content or topic at all, we need generation
+      if (!hasContent || !hasTopic) {
+        return true
+      }
       
-      // For now, don't trigger generation if content exists (fallback is working)
-      // TODO: Add more sophisticated language detection
-      return false
+      // Check if content/topic are in the wrong language using metadata
+      const contentInWrongLanguage = firstRound.contentLanguage && 
+                                   firstRound.contentLanguage !== requestedLanguage
+      const topicInWrongLanguage = debate.topicLanguage && 
+                                 debate.topicLanguage !== requestedLanguage
+      
+      // Need generation if content or topic are in wrong language (fallback was used)
+      return contentInWrongLanguage || topicInWrongLanguage
     }
 
-    // For database format (rounds as object with nested language structure)
+    // For database format (rounds as object with nested language structure)  
+    // This is used in admin/backend contexts where we have the raw DB data
     if (typeof firstRound.pro === 'object' && firstRound.pro !== null) {
+      // Enhanced server-side matching logic
+      const sourceLanguage = requestedLanguage === 'en' ? 'ro' : 'en'
+      
+      // Check if content exists in requested language
       const hasRequestedContent = firstRound.pro[requestedLanguage] && 
                                  firstRound.pro[requestedLanguage].trim() !== '' &&
                                  firstRound.con[requestedLanguage] &&
                                  firstRound.con[requestedLanguage].trim() !== ''
       
-      console.log('Object format check:', {
-        hasRequestedContent,
-        availableLanguages: Object.keys(firstRound.pro || {}),
-        proContent: firstRound.pro[requestedLanguage]?.substring(0, 50) + '...'
-      })
+      // Check if topic exists in requested language
+      const topicField = `topic_${requestedLanguage}`
+      const sourceTopicField = `topic_${sourceLanguage}`
+      const hasTopicInLanguage = debate[topicField] && debate[topicField].trim() !== ''
       
-      return !hasRequestedContent
+      // Check for legacy bug where both topics are identical (like server-side logic)
+      const sourceTopic = debate[sourceTopicField] || debate.topic
+      const targetTopic = debate[topicField]
+      const topicsAreIdentical = (targetTopic && sourceTopic && targetTopic === sourceTopic) ||
+                               (targetTopic && !sourceTopic && requestedLanguage !== 'en')
+      
+      // Need generation if we don't have content, topic, or topics are identical (legacy bug)
+      const needsTopicTranslation = !hasTopicInLanguage || topicsAreIdentical
+      
+      // Match server logic: return false only if we have both content AND topic (and no legacy issues)
+      if (hasRequestedContent && hasTopicInLanguage && !needsTopicTranslation) {
+        return false
+      }
+      
+      return true
     }
 
-    // Fallback for unknown format
-    console.log('Unknown format, skipping generation')
-    return false
+    // Fallback - assume we need generation
+    return true
   }
 
   // Trigger language generation
-  const generateLanguage = async (debateId, targetLanguage, delay = 3000) => {
+  const generateLanguage = async (debateId, targetLanguage, delay = 3000, debate = null) => {
     const queueKey = `${debateId}-${targetLanguage}`
     
     // Avoid duplicate generations - check both queue and current status
     if (generationQueue.current.has(queueKey)) {
-      console.log('Skipping generation - already in queue:', queueKey)
       return
     }
 
     const currentStatus = getGenerationStatus(debateId)
-    if (currentStatus.status === STATUS.GENERATING || currentStatus.status === STATUS.PENDING) {
-      console.log('Skipping generation - already in progress:', queueKey, currentStatus)
+    if (currentStatus.status === STATUS.GENERATING || 
+        currentStatus.status === STATUS.PENDING ||
+        currentStatus.status === STATUS.COMPLETE) {
       return
     }
 
-    console.log('Starting generation for:', queueKey)
+    // Early check: if we have the debate data, check if generation is actually needed
+    // This prevents showing "Preparing..." for content that already exists
+    if (debate && !needsLanguageGeneration(debate, targetLanguage)) {
+      console.log('Generation skipped - content already exists:', queueKey)
+      return
+    }
+
     generationQueue.current.add(queueKey)
     
     // Update status to pending
@@ -142,13 +160,15 @@ export function useAsyncLanguageGeneration() {
               }
             })
           } else {
-            // Content already exists - not an error, just clean up
+            // Content already exists - clean up and remove preparing notification
             console.log('Generation skipped - content already exists:', queueKey)
             setGenerationStatus(prev => ({
               ...prev,
               [debateId]: { status: STATUS.IDLE, language: null }
             }))
-            // Don't show error notification for this case
+            
+            // Immediately remove the "preparing" notification since no work is needed
+            removeNotification(queueKey)
           }
         } else {
           throw new Error(result.error || 'Generation failed')

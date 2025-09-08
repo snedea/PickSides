@@ -45,6 +45,22 @@ export default function SwipeDebateContainer() {
   
   const currentDebate = debates[currentDebateIndex]
 
+  // Utility function to get topic in current language with fallbacks
+  const getTopicForLanguage = (debate, targetLanguage) => {
+    if (!debate) return 'Loading...'
+    
+    const langKey = targetLanguage || language
+    
+    if (langKey === 'en') {
+      return debate.topic_en || debate.topic_ro || debate.topic || 'Unknown Topic'
+    } else if (langKey === 'ro') {
+      return debate.topic_ro || debate.topic_en || debate.topic || 'Subiect necunoscut'
+    }
+    
+    // Fallback to any available topic
+    return debate.topic_en || debate.topic_ro || debate.topic || 'Unknown Topic'
+  }
+
   // Calculate current score from round winners
   const calculateCurrentScore = () => {
     const score = { pro: 0, con: 0 }
@@ -249,10 +265,10 @@ export default function SwipeDebateContainer() {
       // Check if current debate needs language generation
       if (needsLanguageGeneration(currentDebate, language)) {
         // Generate missing language content after a short delay
-        generateLanguage(currentDebate.id, language, 5000) // 5 second delay
+        generateLanguage(currentDebate.id, language, 5000, currentDebate) // Pass debate data for early check
       }
     }
-  }, [currentDebate, language, showOverview, showSubmissionForm, currentRound, needsLanguageGeneration, generateLanguage])
+  }, [currentDebate?.id, language, showOverview, showSubmissionForm, currentRound, needsLanguageGeneration, generateLanguage])
 
   // Load persistent votes from localStorage
   useEffect(() => {
@@ -589,7 +605,7 @@ export default function SwipeDebateContainer() {
       {/* Fixed Topic Header */}
       <div className={styles.fixedHeader}>
         <div className={styles.fixedTopic}>
-          <h1>{currentDebate?.topic || 'Loading...'}</h1>
+          <h1>{getTopicForLanguage(currentDebate)}</h1>
         </div>
       </div>
 
@@ -640,7 +656,7 @@ export default function SwipeDebateContainer() {
             roundWinners={roundWinners}
             proModel={currentDebate.pro_model}
             conModel={currentDebate.con_model}
-            topic={currentDebate.topic}
+            topic={getTopicForLanguage(currentDebate)}
             debate={currentDebate}
             onContinue={() => nextDebate()}
             onVoteAgain={handleVoteAgain}

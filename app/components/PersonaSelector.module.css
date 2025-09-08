@@ -228,6 +228,166 @@
   border-color: rgba(75, 85, 99, 0.5);
 }
 
+/* Enhanced form styles */
+.enhancedForm {
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 1000;
+  max-width: 500px;
+  width: 100vw;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.formHeader {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.formHeader h3 {
+  color: white;
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.formHeader p {
+  color: rgba(156, 163, 175, 0.8);
+  margin: 0;
+  font-size: 14px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formGroupFull {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formGroup label {
+  color: rgba(156, 163, 175, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.textarea {
+  background: rgba(31, 41, 55, 0.6);
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: rgba(34, 197, 94, 0.6);
+  background: rgba(31, 41, 55, 0.8);
+}
+
+.textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.status.info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: rgb(147, 197, 253);
+}
+
+.status.success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: rgb(134, 239, 172);
+}
+
+.status.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: rgb(252, 165, 165);
+}
+
+/* Community personas styling */
+.sectionHeader {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(156, 163, 175, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(31, 41, 55, 0.3);
+  margin: 4px 0;
+}
+
+.crowdsourced {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  padding: 8px 12px !important;
+  gap: 4px !important;
+}
+
+.crowdsourced .name {
+  font-weight: 500;
+}
+
+.crowdsourced .era {
+  font-size: 11px;
+  color: rgba(156, 163, 175, 0.7);
+  margin-left: 20px;
+}
+
+.addNew {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+  color: rgb(110, 231, 183) !important;
+}
+
+.addNew:hover {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.quickAdd {
+  background: rgba(168, 85, 247, 0.1) !important;
+  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+  color: rgb(196, 181, 253) !important;
+}
+
+.quickAdd:hover {
+  background: rgba(168, 85, 247, 0.15) !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 480px) {
   .dropdown {
@@ -242,5 +402,20 @@
   .option {
     padding: 10px 14px;
     font-size: 13px;
+  }
+  
+  .enhancedForm {
+    width: 95vw;
+    max-width: none;
+    padding: 16px;
+  }
+  
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .formHeader h3 {
+    font-size: 16px;
   }
 }
